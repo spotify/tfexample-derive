@@ -29,13 +29,6 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     actual.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
   }
 
-  it should "support Int" in {
-    val example = implicitly[ExampleConverter[Int]].toExample(42)
-    val actual = example.getFeatures.getFeatureMap.get("").getInt64List
-    val expected = Int64List.newBuilder().addValue(42).build
-    actual shouldEqual expected
-  }
-
   it should "support nested case class" in {
     case class Record(f1: Int, f2: Long, inner: Inner)
     case class Inner(f3: Long)

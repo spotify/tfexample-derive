@@ -55,8 +55,7 @@ object ExampleConverter {
   implicit def iterableIntConverter[T <: Iterable[Int]]: ExampleConverter[T] = ints =>
     iterableLongConverter.toExample(ints.map(_.toLong))
 
-  implicit def iterableFloatConverter[T <: Iterable[Float]]: ExampleConverter[T] = {
-    floats =>
+  implicit def iterableFloatConverter[T <: Iterable[Float]]: ExampleConverter[T] = { floats =>
     val jFloats = floats.asJava.asInstanceOf[java.lang.Iterable[java.lang.Float]]
     Example.newBuilder().setFeatures(Features.newBuilder()
       .putFeature("", Feature.newBuilder()
