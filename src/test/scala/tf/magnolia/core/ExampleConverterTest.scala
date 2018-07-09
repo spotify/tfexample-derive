@@ -63,4 +63,23 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     ).asJava
     example.getFeatures.getFeatureMap shouldEqual expectedFeatures
   }
+
+  it should "support collection types" in {
+    case class Record(int: Int, ints: List[Int], inner: Inner)
+    case class Inner(floats: Seq[Float])
+    val example = implicitly[ExampleConverter[Record]].toExample(
+      Record(1, List(1, 2, 3), Inner(Seq(1.0f, 2.0f))))
+    val jInts = List(1L, 2L, 3L).asJava.asInstanceOf[java.lang.Iterable[java.lang.Long]]
+    val jFloats = Seq(1.0f, 2.0f).asJava.asInstanceOf[java.lang.Iterable[java.lang.Float]]
+    val expected = Example.newBuilder()
+      .setFeatures(Features.newBuilder()
+        .putFeature("int", Feature.newBuilder()
+          .setInt64List(Int64List.newBuilder().addValue(1)).build)
+        .putFeature("ints", Feature.newBuilder()
+          .setInt64List(Int64List.newBuilder().addAllValue(jInts)).build)
+        .putFeature("inner_floats", Feature.newBuilder()
+          .setFloatList(FloatList.newBuilder().addAllValue(jFloats)).build)
+        .build)
+    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
+  }
 }

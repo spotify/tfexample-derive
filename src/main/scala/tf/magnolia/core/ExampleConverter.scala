@@ -43,37 +43,45 @@ object ExampleConverter {
       }
     }
 
-  implicit val longConverter: ExampleConverter[Long] = { l =>
+  implicit def iterableLongConverter[T <: Iterable[Long]]: ExampleConverter[T] = { longs =>
+    val jLongs = longs.asJava.asInstanceOf[java.lang.Iterable[java.lang.Long]]
     Example.newBuilder().setFeatures(Features.newBuilder()
       .putFeature("", Feature.newBuilder()
-        .setInt64List(Int64List.newBuilder().addValue(l))
+        .setInt64List(Int64List.newBuilder().addAllValue(jLongs))
         .build))
       .build
   }
 
-  implicit val intConverter: ExampleConverter[Int] = (i: Int) => longConverter.toExample(i)
+  implicit def iterableIntConverter[T <: Iterable[Int]]: ExampleConverter[T] = ints =>
+    iterableLongConverter.toExample(ints.map(_.toLong))
 
-  implicit val floatConverter: ExampleConverter[Float] = { f =>
+  implicit def iterableFloatConverter[T <: Iterable[Float]]: ExampleConverter[T] = {
+    floats =>
+    val jFloats = floats.asJava.asInstanceOf[java.lang.Iterable[java.lang.Float]]
     Example.newBuilder().setFeatures(Features.newBuilder()
       .putFeature("", Feature.newBuilder()
-        .setFloatList(FloatList.newBuilder().addValue(f))
+        .setFloatList(FloatList.newBuilder().addAllValue(jFloats))
         .build))
       .build
   }
 
-  implicit val bytesConverter: ExampleConverter[ByteString] = { bytes =>
+  implicit def iterableBytesConverter[T <: Iterable[ByteString]]: ExampleConverter[T] = { bytes =>
+    val jBytes = bytes.asJava
     Example.newBuilder().setFeatures(Features.newBuilder()
       .putFeature("", Feature.newBuilder()
-        .setBytesList(BytesList.newBuilder().addValue(bytes))
+        .setBytesList(BytesList.newBuilder().addAllValue(jBytes))
         .build))
       .build
   }
 
-  implicit val stringConverter: ExampleConverter[String] = s =>
-    bytesConverter.toExample(ByteString.copyFromUtf8(s))
+  implicit def iterableStringConverter[T <: Iterable[String]]: ExampleConverter[T] = strings =>
+    iterableBytesConverter.toExample(strings.map(ByteString.copyFromUtf8))
+
+  implicit def singletonConverter[T](implicit iterableConverter: ExampleConverter[Iterable[T]])
+  : ExampleConverter[T] = (item: T) => iterableConverter.toExample(Seq(item))
 }
 
-trait ExampleConverter[T] {
+trait ExampleConverter[T] extends Serializable {
   def toExample(record: T): Example
   // TODO: requires schema
 //  def fromExample(example: Example): T
