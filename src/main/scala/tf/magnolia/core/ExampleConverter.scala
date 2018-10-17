@@ -76,8 +76,14 @@ object ExampleConverter {
   implicit def iterableStringConverter[T <: Iterable[String]]: ExampleConverter[T] = strings =>
     iterableBytesConverter.toExample(strings.map(ByteString.copyFromUtf8))
 
-  implicit def singletonConverter[T](implicit iterableConverter: ExampleConverter[Iterable[T]])
+  def singletonConverter[T](implicit iterableConverter: ExampleConverter[Iterable[T]])
   : ExampleConverter[T] = (item: T) => iterableConverter.toExample(Seq(item))
+
+  implicit def singletonLongConverter[T <: Long]: ExampleConverter[T] = singletonConverter
+  implicit def singletonIntConverter[T <: Int]: ExampleConverter[T]  = singletonConverter
+  implicit def singletonFloatConverter[T <: Float]: ExampleConverter[T]  = singletonConverter
+  implicit def singletonByteStringConverter[T <: ByteString]: ExampleConverter[T]  = singletonConverter
+  implicit def singletonStringConverter[T <: String]: ExampleConverter[T]  = singletonConverter
 }
 
 trait ExampleConverter[T] extends Serializable {
