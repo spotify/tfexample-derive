@@ -9,7 +9,7 @@ import scala.collection.JavaConverters._
 class ExampleConverterTest extends FlatSpec with Matchers {
   "ExampleConversion" should "support basic types" in {
     case class BasicRecord(int: Int, long: Long, float: Float, bytes: ByteString, string: String)
-    val actual = implicitly[ExampleConverter[BasicRecord]].toExample(
+    val actual = ExampleConverter[BasicRecord].toExample(
       BasicRecord(1, 2, 3.0f, ByteString.copyFromUtf8("hello"), "world"))
     val expected = Example.newBuilder()
         .setFeatures(Features.newBuilder()
@@ -32,7 +32,7 @@ class ExampleConverterTest extends FlatSpec with Matchers {
   it should "support nested case class" in {
     case class Record(f1: Int, f2: Long, inner: Inner)
     case class Inner(f3: Long)
-    val example = implicitly[ExampleConverter[Record]].toExample(Record(1, 2l, Inner(3l)))
+    val example = ExampleConverter[Record].toExample(Record(1, 2l, Inner(3l)))
     example.getFeatures.getFeatureCount shouldEqual 3
     val features = example.getFeatures.getFeatureMap
     features.get("f1").getInt64List shouldEqual Int64List.newBuilder().addValue(1).build
@@ -44,7 +44,7 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     case class Outer(f: Int, middle: Middle)
     case class Middle(f: Int, inner: Inner)
     case class Inner(f: Int)
-    val example = implicitly[ExampleConverter[Outer]].toExample(Outer(1, Middle(2, Inner(3))))
+    val example = ExampleConverter[Outer].toExample(Outer(1, Middle(2, Inner(3))))
     example.getFeatures.getFeatureCount shouldEqual 3
     val expectedFeatures = Map[String, Feature](
       "f" -> Feature.newBuilder()
@@ -60,7 +60,7 @@ class ExampleConverterTest extends FlatSpec with Matchers {
   it should "support collection types" in {
     case class Record(int: Int, ints: List[Int], inner: Inner)
     case class Inner(floats: Seq[Float])
-    val example = implicitly[ExampleConverter[Record]].toExample(
+    val example = ExampleConverter[Record].toExample(
       Record(1, List(1, 2, 3), Inner(Seq(1.0f, 2.0f))))
     val jInts = List(1L, 2L, 3L).asJava.asInstanceOf[java.lang.Iterable[java.lang.Long]]
     val jFloats = Seq(1.0f, 2.0f).asJava.asInstanceOf[java.lang.Iterable[java.lang.Float]]

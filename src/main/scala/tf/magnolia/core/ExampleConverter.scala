@@ -10,6 +10,8 @@ import scala.collection.JavaConverters._
 object ExampleConverter {
   type Typeclass[T] = ExampleConverter[T]
 
+  def apply[T](implicit conv: ExampleConverter[T]): ExampleConverter[T] = conv
+
   def combine[T](caseClass: CaseClass[ExampleConverter, T]): ExampleConverter[T] = (record: T) => {
     val examples = caseClass.parameters.map { p =>
       composeWithName(p.label, p.typeclass).toExample(p.dereference(record))
