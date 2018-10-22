@@ -1,5 +1,7 @@
 package tf.magnolia.core
 
+import java.net.URI
+
 import com.google.protobuf.ByteString
 import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.example._
