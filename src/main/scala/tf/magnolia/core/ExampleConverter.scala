@@ -1,39 +1,47 @@
 package tf.magnolia.core
 
-import java.net.URI
-import java.util
-
 import com.google.protobuf.ByteString
 import org.tensorflow.example._
 import magnolia._
-import java.util.{Map => JMap}
 
 import scala.language.experimental.macros
 import scala.collection.JavaConverters._
 
 object ExampleConverter {
-  type Typeclass[T] = FeaturesBuilder[T]
-
-
-  trait FeaturesBuilder[T] {
-    def toFeatures(record: T): JMap[String, Feature]
-  }
+  type Typeclass[T] = FeatureBuilder[T]
 
   def apply[T](implicit conv: ExampleConverter[T]): ExampleConverter[T] = conv
 
-  def combine[T](caseClass: CaseClass[FeaturesBuilder, T]): FeaturesBuilder[T] = (record: T) => {
-    val examples = caseClass.parameters.map { p =>
+  trait FeatureBuilder[T] {
+    def toFeatures(record: T): Features.Builder
+  }
+  object FeatureBuilder {
+    def of[T]: FeatureBuilderFrom[T] = new FeatureBuilderFrom[T]
+  }
+
+  class FeatureBuilderFrom[T] {
+    def apply[U](f: T => U)(implicit fb: FeatureBuilder[U]): FeatureBuilder[T] =
+      new FeatureBuilder[T] {
+        override def toFeatures(record: T): Features.Builder = fb.toFeatures(f(record))
+      }
+  }
+
+  def combine[T](caseClass: CaseClass[FeatureBuilder, T]): FeatureBuilder[T] = (record: T) => {
+    val features = caseClass.parameters.map { p =>
+      p.repeated
       composeWithName(p.label, p.typeclass).toFeatures(p.dereference(record))
     }
-    // TODO: check size and optimize?
-    examples.reduce((m1, m2) => { m1.putAll(m2); m1 })
+    features.reduce { (fb1, fb2) =>
+      fb1.putAllFeature(fb2.getFeatureMap)
+      fb1
+    }
   }
 
   def dispatch[T](sealedTrait: SealedTrait[Typeclass, T]): Typeclass[T] = ???
 
   implicit def gen[T]: Typeclass[T] = macro Magnolia.gen[T]
 
-  private def composeWithName[T](name: String, instance: FeaturesBuilder[T]): FeaturesBuilder[T] =
+  private def composeWithName[T](name: String, instance: FeatureBuilder[T]): FeatureBuilder[T] =
     (record: T) => {
       val features = instance.toFeatures(record)
       // If the parameter is -not- a nested case class, it should be treated as an anonymous
@@ -42,75 +50,71 @@ object ExampleConverter {
       // we can instead just check whether the generated features already have names or not.
       // If the parameter -is- a nested case class, we prepend its feature names with this parameter
       // name to prevent potential ambiguities.
-      if (features.size() == 1 && features.containsKey("")) {
-        val feature = features.remove("")
-        features.put(name, feature)
+      if (features.getFeatureCount == 1 && features.containsFeature("")) {
+        val feature = features.getFeatureOrThrow("")
+        features.removeFeature("")
+        features.putFeature(name, feature)
         features
       }
       else {
         // TODO: fix
-        val fMap = features.asScala.map { case (fName, f) =>
+        val fMap = features.getFeatureMap.asScala.map { case (fName, f) =>
           (s"${name}_$fName", f)
         }.asJava
-        fMap
+        Features.newBuilder().putAllFeature(fMap)
       }
     }
 
-  implicit def iterableLongConverter[T <: Iterable[Long]]: FeaturesBuilder[T] = { longs =>
+  implicit def iterableLongConverter[T <: Iterable[Long]]: FeatureBuilder[T] = { longs =>
     val jLongs = longs.asJava.asInstanceOf[java.lang.Iterable[java.lang.Long]]
-    anonMapOf(Feature.newBuilder()
+    featuresOf(Feature.newBuilder()
       .setInt64List(
         Int64List.newBuilder()
           .addAllValue(jLongs))
       .build)
   }
 
-  implicit def iterableIntConverter[T <: Iterable[Int]]: FeaturesBuilder[T] = ints =>
+  implicit def iterableIntConverter[T <: Iterable[Int]]: FeatureBuilder[T] = ints =>
     iterableLongConverter.toFeatures(ints.map(_.toLong))
 
-  implicit def iterableFloatConverter[T <: Iterable[Float]]: FeaturesBuilder[T] = { floats =>
+  implicit def iterableFloatConverter[T <: Iterable[Float]]: FeatureBuilder[T] = { floats =>
     val jFloats = floats.asJava.asInstanceOf[java.lang.Iterable[java.lang.Float]]
-    anonMapOf(Feature.newBuilder()
+    featuresOf(Feature.newBuilder()
       .setFloatList(FloatList.newBuilder().addAllValue(jFloats))
       .build)
   }
 
-  implicit def iterableBytesConverter[T <: Iterable[ByteString]]: FeaturesBuilder[T] = { bytes =>
+  implicit def iterableBytesConverter[T <: Iterable[ByteString]]: FeatureBuilder[T] = { bytes =>
     val jBytes = bytes.asJava
-    anonMapOf(Feature.newBuilder()
+    featuresOf(Feature.newBuilder()
       .setBytesList(BytesList.newBuilder().addAllValue(jBytes))
       .build)
   }
 
-  implicit def iterableStringConverter[T <: Iterable[String]]: FeaturesBuilder[T] = strings =>
+  implicit def iterableStringConverter[T <: Iterable[String]]: FeatureBuilder[T] = strings =>
     iterableBytesConverter.toFeatures(strings.map(ByteString.copyFromUtf8))
 
-  def singletonConverter[T](implicit iterableConverter: FeaturesBuilder[Iterable[T]])
-  : FeaturesBuilder[T] = (item: T) => iterableConverter.toFeatures(Seq(item))
+  def singletonConverter[T](implicit iterableConverter: FeatureBuilder[Iterable[T]])
+  : FeatureBuilder[T] = (item: T) => iterableConverter.toFeatures(Seq(item))
 
-  implicit def singletonLongConverter[T <: Long]: FeaturesBuilder[T] = singletonConverter
-  implicit def singletonIntConverter[T <: Int]: FeaturesBuilder[T]  = singletonConverter
-  implicit def singletonFloatConverter[T <: Float]: FeaturesBuilder[T]  = singletonConverter
-  implicit def singletonByteStringConverter[T <: ByteString]: FeaturesBuilder[T]  = singletonConverter
-  implicit def singletonStringConverter[T <: String]: FeaturesBuilder[T]  = singletonConverter
+  implicit def singletonLongConverter[T <: Long]: FeatureBuilder[T] = singletonConverter
+  implicit def singletonIntConverter[T <: Int]: FeatureBuilder[T] = singletonConverter
+  implicit def singletonFloatConverter[T <: Float]: FeatureBuilder[T] = singletonConverter
+  implicit def singletonByteStringConverter[T <: ByteString]: FeatureBuilder[T] = singletonConverter
+  implicit def singletonStringConverter[T <: String]: FeatureBuilder[T] = singletonConverter
 
-  implicit def toExampleConverter[T](implicit fb: FeaturesBuilder[T]): ExampleConverter[T] =
-  new ExampleConverter[T] {
-    override def toExample(record: T): Example = {
-      Example.newBuilder()
-        .setFeatures(
-          Features.newBuilder()
-            .putAllFeature(fb.toFeatures(record)))
-        .build()
+  implicit def toExampleConverter[T](implicit fb: FeatureBuilder[T]): ExampleConverter[T] =
+    new ExampleConverter[T] {
+      override def toExample(record: T): Example = {
+        Example.newBuilder()
+          .setFeatures(fb.toFeatures(record))
+          .build()
+      }
     }
-  }
 
-  private def anonMapOf(feature: Feature): JMap[String, Feature] = {
-    //TODO: guava?
-    val map = new util.HashMap[String, Feature]()
-    map.put("", feature)
-    map
-  }
+  private def featuresOf(feature: Feature): Features.Builder =
+    Features.newBuilder().putFeature("", feature)
+
 }
 
 trait ExampleConverter[T] {
