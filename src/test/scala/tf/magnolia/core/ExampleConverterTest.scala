@@ -5,7 +5,9 @@ import java.net.URI
 import com.google.protobuf.ByteString
 import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.example._
+import tf.magnolia.core.ExampleConverter.FeatureBuilder
 
+import java.lang.{Float => JFloat, Iterable => JIterable, Long => JLong}
 import scala.collection.JavaConverters._
 
 class ExampleConverterTest extends FlatSpec with Matchers {
@@ -15,18 +17,11 @@ class ExampleConverterTest extends FlatSpec with Matchers {
       BasicRecord(1, 2, 3.0f, ByteString.copyFromUtf8("hello"), "world"))
     val expected = Example.newBuilder()
         .setFeatures(Features.newBuilder()
-          .putFeature("int", Feature.newBuilder()
-            .setInt64List(Int64List.newBuilder().addValue(1)).build)
-          .putFeature("long", Feature.newBuilder()
-            .setInt64List(Int64List.newBuilder().addValue(2)).build)
-          .putFeature("float", Feature.newBuilder()
-            .setFloatList(FloatList.newBuilder().addValue(3.0f)).build)
-          .putFeature("bytes", Feature.newBuilder()
-            .setBytesList(BytesList.newBuilder().addValue(ByteString.copyFromUtf8("hello")))
-            .build)
-          .putFeature("string", Feature.newBuilder()
-            .setBytesList(BytesList.newBuilder().addValue(ByteString.copyFromUtf8("world")))
-            .build)
+          .putFeature("int", longFeat(1L))
+          .putFeature("long", longFeat(2L))
+          .putFeature("float", floatFeat(3.0f))
+          .putFeature("bytes", stringFeat("hello"))
+          .putFeature("string", stringFeat("world"))
         .build)
     actual.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
   }
@@ -49,12 +44,9 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     val example = ExampleConverter[Outer].toExample(Outer(1, Middle(2, Inner(3))))
     example.getFeatures.getFeatureCount shouldEqual 3
     val expectedFeatures = Map[String, Feature](
-      "f" -> Feature.newBuilder()
-        .setInt64List(Int64List.newBuilder().addValue(1)).build,
-      "middle_f" -> Feature.newBuilder()
-        .setInt64List(Int64List.newBuilder().addValue(2)).build,
-      "middle_inner_f" -> Feature.newBuilder()
-        .setInt64List(Int64List.newBuilder().addValue(3)).build
+      "f" -> longFeat(1L),
+      "middle_f" -> longFeat(2L),
+      "middle_inner_f" -> longFeat(3L)
     ).asJava
     example.getFeatures.getFeatureMap shouldEqual expectedFeatures
   }
@@ -64,17 +56,41 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     case class Inner(floats: Seq[Float])
     val example = ExampleConverter[Record].toExample(
       Record(1, List(1, 2, 3), Inner(Seq(1.0f, 2.0f))))
-    val jInts = List(1L, 2L, 3L).asJava.asInstanceOf[java.lang.Iterable[java.lang.Long]]
-    val jFloats = Seq(1.0f, 2.0f).asJava.asInstanceOf[java.lang.Iterable[java.lang.Float]]
     val expected = Example.newBuilder()
       .setFeatures(Features.newBuilder()
-        .putFeature("int", Feature.newBuilder()
-          .setInt64List(Int64List.newBuilder().addValue(1)).build)
-        .putFeature("ints", Feature.newBuilder()
-          .setInt64List(Int64List.newBuilder().addAllValue(jInts)).build)
-        .putFeature("inner_floats", Feature.newBuilder()
-          .setFloatList(FloatList.newBuilder().addAllValue(jFloats)).build)
+        .putFeature("int", longFeat(1))
+        .putFeature("ints", longFeat(1L, 2L, 3L))
+        .putFeature("inner_floats", floatFeat(1.0f, 2.0f))
         .build)
     example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
+  }
+
+  it should "support custom types" in {
+    implicit val uriFeatureBuilder: FeatureBuilder[URI] = FeatureBuilder.of[URI](_.toString)
+
+    case class Record(id: String, uri: URI)
+    val example = ExampleConverter[Record].toExample(Record("1", URI.create("file://foo")))
+    val expected = Example.newBuilder()
+      .setFeatures(Features.newBuilder()
+        .putFeature("id", stringFeat("1"))
+        .putFeature("uri", stringFeat("file://foo"))
+      )
+      .build()
+    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
+  }
+
+  private def longFeat(longs: Long*): Feature = {
+    val jLongs = longs.asJava.asInstanceOf[JIterable[JLong]]
+    Feature.newBuilder().setInt64List(Int64List.newBuilder().addAllValue(jLongs)).build()
+  }
+
+  private def floatFeat(floats: Float*): Feature = {
+    val jFloats = floats.asJava.asInstanceOf[JIterable[JFloat]]
+    Feature.newBuilder().setFloatList(FloatList.newBuilder().addAllValue(jFloats)).build()
+  }
+
+  private def stringFeat(str: String): Feature = {
+    Feature.newBuilder().setBytesList(BytesList.newBuilder().addValue(ByteString.copyFromUtf8(str)))
+      .build()
   }
 }
