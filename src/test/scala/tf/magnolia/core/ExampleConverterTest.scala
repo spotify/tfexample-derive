@@ -50,19 +50,19 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     example.getFeatures.getFeatureMap shouldEqual expectedFeatures
   }
 
-  it should "support collection types" in {
-    case class Record(int: Int, ints: List[Int], inner: Inner)
-    case class Inner(floats: Seq[Float])
-    val example = ExampleConverter[Record].toExample(
-      Record(1, List(1, 2, 3), Inner(Seq(1.0f, 2.0f))))
-    val expected = Example.newBuilder()
-      .setFeatures(Features.newBuilder()
-        .putFeature("int", longFeat(1))
-        .putFeature("ints", longFeat(1L, 2L, 3L))
-        .putFeature("inner_floats", floatFeat(1.0f, 2.0f))
-        .build)
-    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
-  }
+//  it should "support collection types" in {
+//    case class Record(int: Int, ints: List[Int], inner: Inner)
+//    case class Inner(floats: Seq[Float])
+//    val example = ExampleConverter[Record].toExample(
+//      Record(1, List(1, 2, 3), Inner(Seq(1.0f, 2.0f))))
+//    val expected = Example.newBuilder()
+//      .setFeatures(Features.newBuilder()
+//        .putFeature("int", longFeat(1))
+//        .putFeature("ints", longFeat(1L, 2L, 3L))
+//        .putFeature("inner_floats", floatFeat(1.0f, 2.0f))
+//        .build)
+//    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
+//  }
 
 //  it should "support custom types" in {
 //    class MyInt(val int: Int)
@@ -84,6 +84,23 @@ class ExampleConverterTest extends FlatSpec with Matchers {
 //      .build()
 //    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
 //  }
+
+  it should "support basic types from examples" in {
+    case class BasicRecord(int: Int, long: Long, float: Float, bytes: ByteString, string: String)
+    val example = Example.newBuilder()
+      .setFeatures(Features.newBuilder()
+        .putFeature("int", longFeat(1L))
+        .putFeature("long", longFeat(2L))
+        .putFeature("float", floatFeat(3.0f))
+        .putFeature("bytes", stringFeat("hello"))
+        .putFeature("string", stringFeat("world"))
+        .build)
+      .build()
+    val expected = BasicRecord(1, 2, 3.0f, ByteString.copyFromUtf8("hello"), "world")
+    val actual = ExampleConverter[BasicRecord].fromExample(example)
+
+    actual shouldEqual expected
+  }
 
   private def longFeat(longs: Long*): Feature = {
     val jLongs = longs.asJava.asInstanceOf[JIterable[JLong]]
