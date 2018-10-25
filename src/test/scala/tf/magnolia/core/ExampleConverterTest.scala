@@ -1,10 +1,9 @@
 package tf.magnolia.core
 
-import java.net.URI
-
 import com.google.protobuf.ByteString
 import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.example._
+import tf.magnolia.core.TensorflowMapping._
 
 import java.lang.{Float => JFloat, Iterable => JIterable, Long => JLong}
 import scala.collection.JavaConverters._
@@ -50,40 +49,43 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     example.getFeatures.getFeatureMap shouldEqual expectedFeatures
   }
 
-//  it should "support collection types" in {
-//    case class Record(int: Int, ints: List[Int], inner: Inner)
-//    case class Inner(floats: Seq[Float])
-//    val example = ExampleConverter[Record].toExample(
-//      Record(1, List(1, 2, 3), Inner(Seq(1.0f, 2.0f))))
-//    val expected = Example.newBuilder()
-//      .setFeatures(Features.newBuilder()
-//        .putFeature("int", longFeat(1))
-//        .putFeature("ints", longFeat(1L, 2L, 3L))
-//        .putFeature("inner_floats", floatFeat(1.0f, 2.0f))
-//        .build)
-//    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
-//  }
+  it should "support collection types" in {
+    case class Record(int: Int, ints: List[Int], inner: Inner)
+    case class Inner(floats: Seq[Float], bools: Array[Boolean])
+    FeatureBuilder.gen[Record]
+    val example = ExampleConverter[Record].toExample(
+      Record(1, List(1, 2, 3), Inner(Seq(1.0f, 2.0f), Array(true, false))))
+    val expected = Example.newBuilder()
+      .setFeatures(Features.newBuilder()
+        .putFeature("int", longFeat(1))
+        .putFeature("ints", longFeat(1L, 2L, 3L))
+        .putFeature("inner_floats", floatFeat(1.0f, 2.0f))
+        .putFeature("inner_bools", longFeat(1L, 0L))
+        .build)
+    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
+  }
 
-//  it should "support custom types" in {
-//    class MyInt(val int: Int)
-//
-//    implicit val myIntFeatureBuilder: FeatureBuilder[MyInt] =
-//      FeatureBuilder.of[MyInt](n => Seq(n.int))
-//
-//    // TODO: figure out why List doesn't work (Nil?)
-//    case class Record(id: String, myInt: MyInt, myInts: Seq[MyInt])
-//    val conv = ExampleConverter[Record]
-//      val example = conv.toExample(
-//      Record("1", new MyInt(1), List(new MyInt(2), new MyInt(3))))
-//    val expected = Example.newBuilder()
-//      .setFeatures(Features.newBuilder()
-//        .putFeature("id", stringFeat("1"))
-//        .putFeature("myInt", longFeat(1L))
-//        .putFeature("myInts", longFeat(2L, 3L))
-//      )
-//      .build()
-//    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
-//  }
+  it should "support custom types" in {
+    class MyInt(val int: Int)
+
+    implicit val myIntType: TensorflowMapping[MyInt] =
+      TensorflowMapping[MyInt](
+        f => toInts(f).map(n => new MyInt(n)),
+        myInts => fromInts(myInts.map(_.int)))
+
+    case class Record(id: String, myInt: MyInt, myInts: List[MyInt])
+    val conv = ExampleConverter[Record]
+    val example = conv.toExample(
+      Record("1", new MyInt(1), List(new MyInt(2), new MyInt(3))))
+    val expected = Example.newBuilder()
+      .setFeatures(Features.newBuilder()
+        .putFeature("id", stringFeat("1"))
+        .putFeature("myInt", longFeat(1L))
+        .putFeature("myInts", longFeat(2L, 3L))
+      )
+      .build()
+    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
+  }
 
   it should "support basic types from examples" in {
     case class BasicRecord(int: Int, long: Long, float: Float, bytes: ByteString, string: String)
