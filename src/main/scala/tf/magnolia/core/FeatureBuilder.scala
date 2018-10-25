@@ -14,17 +14,6 @@ trait FeatureBuilder[T] {
 object FeatureBuilder {
   type Typeclass[T] = FeatureBuilder[T]
 
-  def of[T]: FeatureBuilderFrom[T] = new FeatureBuilderFrom[T]
-
-  class FeatureBuilderFrom[T] {
-    def apply[U](f1: T => Iterable[U])(f2: Iterable[U] => T)(implicit fb: FeatureBuilder[Iterable[U]]): FeatureBuilder[T] =
-      new FeatureBuilder[T] {
-        override def toFeatures(record: T): Features.Builder = fb.toFeatures(f1(record))
-
-        override def fromFeatures(features: Features): T = f2(fb.fromFeatures(features))
-      }
-  }
-
   def combine[T](caseClass: CaseClass[FeatureBuilder, T]): FeatureBuilder[T] =
     new FeatureBuilder[T] {
       override def toFeatures(record: T): Features.Builder = {
@@ -82,7 +71,7 @@ object FeatureBuilder {
           features
         }
         else {
-          // TODO: fix
+          // TODO: do we really need scala conversion?
           val fMap = features.getFeatureMap.asScala.map { case (fName, f) =>
             (s"${name}_$fName", f)
           }.asJava
