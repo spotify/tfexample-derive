@@ -73,7 +73,7 @@ object FeatureBuilder {
         else {
           // TODO: do we really need scala conversion?
           val fMap = features.getFeatureMap.asScala.map { case (fName, f) =>
-            (s"${name}_$fName", f)
+            (s"${name}.$fName", f)
           }.asJava
           Features.newBuilder().putAllFeature(fMap)
         }
