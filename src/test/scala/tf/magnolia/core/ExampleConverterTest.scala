@@ -32,7 +32,7 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     val features = example.getFeatures.getFeatureMap
     features.get("f1").getInt64List shouldEqual Int64List.newBuilder().addValue(1).build
     features.get("f2").getInt64List shouldEqual Int64List.newBuilder().addValue(2).build
-    features.get("inner_f3").getInt64List shouldEqual Int64List.newBuilder().addValue(3).build
+    features.get("inner.f3").getInt64List shouldEqual Int64List.newBuilder().addValue(3).build
   }
 
   it should "handle duplicate feature names" in {
@@ -43,8 +43,8 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     example.getFeatures.getFeatureCount shouldEqual 3
     val expectedFeatures = Map[String, Feature](
       "f" -> longFeat(1L),
-      "middle_f" -> longFeat(2L),
-      "middle_inner_f" -> longFeat(3L)
+      "middle.f" -> longFeat(2L),
+      "middle.inner.f" -> longFeat(3L)
     ).asJava
     example.getFeatures.getFeatureMap shouldEqual expectedFeatures
   }
@@ -59,8 +59,8 @@ class ExampleConverterTest extends FlatSpec with Matchers {
       .setFeatures(Features.newBuilder()
         .putFeature("int", longFeat(1))
         .putFeature("ints", longFeat(1L, 2L, 3L))
-        .putFeature("inner_floats", floatFeat(1.0f, 2.0f))
-        .putFeature("inner_bools", longFeat(1L, 0L))
+        .putFeature("inner.floats", floatFeat(1.0f, 2.0f))
+        .putFeature("inner.bools", longFeat(1L, 0L))
         .build)
     example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
   }
