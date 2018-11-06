@@ -6,7 +6,7 @@ val scalaTestVersion = "3.0.5"
 val tensorflowVersion = "1.7.0"
 
 val commonSettings = Seq(
-  organization := "andrewsmartin",
+  organization := "com.github.andrewsmartin",
 
   scalaVersion := "2.12.6",
   crossScalaVersions := Seq("2.11.12", "2.12.6"),
