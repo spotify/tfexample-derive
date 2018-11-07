@@ -41,7 +41,7 @@ object FeatureBuilder {
             // construct a new features map with keys starting with param.label
             val keys = fsMap.keySet().asScala.filter(_.startsWith(key))
             keys.foreach { key =>
-              val newKey = key.replaceFirst(".*\\.", "")
+              val newKey = key.replaceFirst(".+\\.", "")
               fb.putFeature(newKey, fsMap.get(key))
             }
             param.typeclass.fromFeatures(fb.build())
