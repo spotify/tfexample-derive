@@ -4,11 +4,13 @@ import com.google.protobuf.ByteString
 import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.example._
 import tf.magnolia.core.TensorflowMapping._
-
 import java.lang.{Float => JFloat, Iterable => JIterable, Long => JLong}
+import java.util
+
 import scala.collection.JavaConverters._
 
 class ExampleConverterTest extends FlatSpec with Matchers {
+
   "ExampleConversion" should "support basic types" in {
     case class BasicRecord(int: Int, long: Long, float: Float, bytes: ByteString, string: String)
     val actual = ExampleConverter[BasicRecord].toExample(
@@ -21,7 +23,7 @@ class ExampleConverterTest extends FlatSpec with Matchers {
           .putFeature("bytes", stringFeat("hello"))
           .putFeature("string", stringFeat("world"))
         .build)
-    actual.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
+    featuresOf(actual) shouldEqual featuresOf(expected)
   }
 
   it should "support nested case class" in {
@@ -46,15 +48,15 @@ class ExampleConverterTest extends FlatSpec with Matchers {
       "middle.f" -> longFeat(2L),
       "middle.inner.f" -> longFeat(3L)
     ).asJava
-    example.getFeatures.getFeatureMap shouldEqual expectedFeatures
+    featuresOf(example) shouldEqual expectedFeatures
   }
 
   it should "support collection types" in {
     case class Record(int: Int, ints: List[Int], inner: Inner)
     case class Inner(floats: Seq[Float], bools: Array[Boolean])
-    FeatureBuilder.gen[Record]
-    val example = ExampleConverter[Record].toExample(
-      Record(1, List(1, 2, 3), Inner(Seq(1.0f, 2.0f), Array(true, false))))
+    val converter = ExampleConverter[Record]
+    val record = Record(1, List(1, 2, 3), Inner(Seq(1.0f, 2.0f), Array(true, false)))
+    val example = converter.toExample(record)
     val expected = Example.newBuilder()
       .setFeatures(Features.newBuilder()
         .putFeature("int", longFeat(1))
@@ -62,7 +64,13 @@ class ExampleConverterTest extends FlatSpec with Matchers {
         .putFeature("inner.floats", floatFeat(1.0f, 2.0f))
         .putFeature("inner.bools", longFeat(1L, 0L))
         .build)
-    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
+    featuresOf(example) shouldEqual featuresOf(expected)
+    // Test round trip
+    val newRecord = converter.fromExample(example)
+    newRecord.int shouldEqual 1
+    newRecord.ints shouldEqual List(1, 2, 3)
+    newRecord.inner.bools.toList shouldEqual List(true, false)
+    newRecord.inner.floats.toList shouldEqual List(1.0f, 2.0f)
   }
 
   it should "support custom types" in {
@@ -84,7 +92,7 @@ class ExampleConverterTest extends FlatSpec with Matchers {
         .putFeature("myInts", longFeat(2L, 3L))
       )
       .build()
-    example.getFeatures.getFeatureMap shouldEqual expected.getFeatures.getFeatureMap
+    featuresOf(example) shouldEqual featuresOf(expected)
   }
 
   it should "support basic types from examples" in {
@@ -114,8 +122,12 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     Feature.newBuilder().setFloatList(FloatList.newBuilder().addAllValue(jFloats)).build()
   }
 
-  private def stringFeat(str: String): Feature = {
-    Feature.newBuilder().setBytesList(BytesList.newBuilder().addValue(ByteString.copyFromUtf8(str)))
+  private def stringFeat(str: String*): Feature = {
+    val strings = str.map(ByteString.copyFromUtf8).asJava
+    Feature.newBuilder().setBytesList(BytesList.newBuilder().addAllValue(strings))
       .build()
   }
+
+  private def featuresOf(e: Example): util.Map[String, Feature] = e.getFeatures.getFeatureMap
+  private def featuresOf(e: Example.Builder): util.Map[String, Feature] = featuresOf(e.build)
 }
