@@ -1,5 +1,6 @@
 name := "tf-magnolia"
-description := "Utilities for converting between Scala case classes and tensorflow types"
+description := "Provides compile-time derivation of conversions between Scala case classes and " +
+  "Tensorflow Example protcol buffers"
 
 val magnoliaVersion = "0.7.1"
 val scalaTestVersion = "3.0.5"
