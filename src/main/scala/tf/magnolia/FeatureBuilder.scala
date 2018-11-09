@@ -1,4 +1,4 @@
-package tf.magnolia.core
+package tf.magnolia
 
 import org.tensorflow.example._
 import magnolia._

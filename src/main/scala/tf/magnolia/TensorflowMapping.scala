@@ -1,4 +1,4 @@
-package tf.magnolia.core
+package tf.magnolia
 
 import com.google.protobuf.ByteString
 import org.tensorflow.example.{BytesList, Feature, FloatList, Int64List}

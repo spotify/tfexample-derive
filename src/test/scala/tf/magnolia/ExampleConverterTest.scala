@@ -1,9 +1,9 @@
-package tf.magnolia.core
+package tf.magnolia
 
 import com.google.protobuf.ByteString
 import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.example._
-import tf.magnolia.core.TensorflowMapping._
+import TensorflowMapping._
 import java.lang.{Float => JFloat, Iterable => JIterable, Long => JLong}
 import java.util
 

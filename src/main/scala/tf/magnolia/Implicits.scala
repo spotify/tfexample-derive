@@ -1,8 +1,8 @@
-package tf.magnolia.core
+package tf.magnolia
 
 import com.google.protobuf.ByteString
 import org.tensorflow.example._
-import tf.magnolia.core.TensorflowMapping._
+import TensorflowMapping._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
