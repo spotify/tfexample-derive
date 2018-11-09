@@ -9,7 +9,7 @@ val commonSettings = Seq(
   organization := "com.github.andrewsmartin",
 
   scalaVersion := "2.12.6",
-  crossScalaVersions := Seq("2.11.12", "2.12.6"),
+  crossScalaVersions := Seq("2.11.12", "2.12.7"),
   scalacOptions ++= Seq("-target:jvm-1.8", "-deprecation", "-feature", "-unchecked"),
 )
 
