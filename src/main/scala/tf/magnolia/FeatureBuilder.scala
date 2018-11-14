@@ -18,7 +18,7 @@ object FeatureBuilder {
     new FeatureBuilder[T] {
       override def toFeatures(record: T): Features.Builder = {
         val features = caseClass.parameters.map { p =>
-          composeWithName(p.label, p.typeclass).toFeatures(p.dereference(record))
+          composeWithName(p.label, p.typeclass)(p.dereference(record))
         }
         features.reduce { (fb1, fb2) =>
           fb1.putAllFeature(fb2.getFeatureMap)
@@ -50,35 +50,31 @@ object FeatureBuilder {
       }
     }
 
-  def dispatch[T](sealedTrait: SealedTrait[Typeclass, T]): Typeclass[T] = ???
+  def dispatch[T](sealedTrait: SealedTrait[Typeclass, T]): FeatureBuilder[T] = ???
 
   implicit def gen[T]: Typeclass[T] = macro Magnolia.gen[T]
 
-  private def composeWithName[T](name: String, instance: FeatureBuilder[T]): FeatureBuilder[T] =
-    new FeatureBuilder[T] {
-      override def toFeatures(record: T): Features.Builder = {
-        val features = instance.toFeatures(record)
-        // If the parameter is -not- a nested case class, it should be treated as an anonymous
-        // (un-named) single feature. In this case, we name the feature using the param name.
-        // Instead of checking whether the param is a case class directly (via reflection),
-        // we can instead just check whether the generated features already have names or not.
-        // If the parameter -is- a nested case class, we prepend its feature names with this parameter
-        // name to prevent potential ambiguities.
-        if (features.getFeatureCount == 1 && features.containsFeature("")) {
-          val feature = features.getFeatureOrThrow("")
-          features.removeFeature("")
-          features.putFeature(name, feature)
-          features
-        }
-        else {
-          // TODO: do we really need scala conversion?
-          val fMap = features.getFeatureMap.asScala.map { case (fName, f) =>
-            (s"${name}.$fName", f)
-          }.asJava
-          Features.newBuilder().putAllFeature(fMap)
-        }
-      }
-
-      override def fromFeatures(features: Features): T = instance.fromFeatures(features)
+  private def composeWithName[T](name: String, instance: FeatureBuilder[T])
+  : T => Features.Builder = { record =>
+    val features = instance.toFeatures(record)
+    // If the parameter is -not- a nested case class, it should be treated as an anonymous
+    // (un-named) single feature. In this case, we name the feature using the param name.
+    // Instead of checking whether the param is a case class directly (via reflection),
+    // we can instead just check whether the generated features already have names or not.
+    // If the parameter -is- a nested case class, we prepend its feature names with this parameter
+    // name to prevent potential ambiguities.
+    if (features.getFeatureCount == 1 && features.containsFeature("")) {
+      val feature = features.getFeatureOrThrow("")
+      features.removeFeature("")
+      features.putFeature(name, feature)
+      features
     }
+    else {
+      // TODO: do we really need scala conversion?
+      val fMap = features.getFeatureMap.asScala.map { case (fName, f) =>
+        (s"${name}.$fName", f)
+      }.asJava
+      Features.newBuilder().putAllFeature(fMap)
+    }
+  }
 }
