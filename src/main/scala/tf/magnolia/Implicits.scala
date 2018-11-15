@@ -4,7 +4,6 @@ import com.google.protobuf.ByteString
 import org.tensorflow.example._
 import TensorflowMapping._
 
-import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 trait Implicits {
@@ -28,56 +27,60 @@ trait Implicits {
   implicit def singletonFeatureBuilder[T](implicit mapping: TensorflowMapping[T])
   : FeatureBuilder[T] =
     new FeatureBuilder[T] {
-      override def toFeatures(record: T): Features.Builder = featuresOf(mapping.toFeature(record))
-      override def fromFeatures(features: Features): T = {
-        mapping.fromFeature(features.getFeatureMap.values().asScala.head)
+      override def toFeatures(record: T, nameOrPrefix: Option[String]): Features.Builder =
+        featuresOf(nameOrPrefix, mapping.toFeature(record))
+      override def fromFeatures(features: Features, nameOrPrefix: Option[String]): T = {
+        mapping.fromFeature(getFeature(nameOrPrefix, features))
       }
     }
 
   // Collections (TODO: can these be refactored?)
   implicit def iterableFb[T](implicit mapping: TensorflowMapping[T])
   : FeatureBuilder[Iterable[T]] = new FeatureBuilder[Iterable[T]] {
-    override def toFeatures(record: Iterable[T]): Features.Builder =
-      featuresOf(mapping.toSeq(record.toSeq))
-    override def fromFeatures(features: Features): Iterable[T] =
-      mapping.fromSeq(features.getFeatureMap.values().asScala.head)
+    override def toFeatures(record: Iterable[T], nameOrPrefix: Option[String]): Features.Builder =
+      featuresOf(nameOrPrefix, mapping.toSeq(record.toSeq))
+    override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Iterable[T] =
+      mapping.fromSeq(getFeature(nameOrPrefix, features))
   }
 
   implicit def seqFb[T](implicit mapping: TensorflowMapping[T])
   : FeatureBuilder[Seq[T]] = new FeatureBuilder[Seq[T]] {
-    override def toFeatures(record: Seq[T]): Features.Builder =
-      featuresOf(mapping.toSeq(record))
-    override def fromFeatures(features: Features): Seq[T] =
-      mapping.fromSeq(features.getFeatureMap.values().asScala.head)
+    override def toFeatures(record: Seq[T], nameOrPrefix: Option[String]): Features.Builder =
+      featuresOf(nameOrPrefix, mapping.toSeq(record))
+    override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Seq[T] =
+      mapping.fromSeq(getFeature(nameOrPrefix, features))
   }
 
   implicit def arrFb[T: ClassTag](implicit mapping: TensorflowMapping[T])
   : FeatureBuilder[Array[T]] = new FeatureBuilder[Array[T]] {
-    override def toFeatures(record: Array[T]): Features.Builder =
-      featuresOf(mapping.toSeq(record))
-    override def fromFeatures(features: Features): Array[T] =
-      mapping.fromSeq(features.getFeatureMap.values().asScala.head).toArray
+    override def toFeatures(record: Array[T], nameOrPrefix: Option[String]): Features.Builder =
+      featuresOf(nameOrPrefix, mapping.toSeq(record))
+    override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Array[T] =
+      mapping.fromSeq(getFeature(nameOrPrefix, features)).toArray
   }
 
   implicit def listFb[T](implicit mapping: TensorflowMapping[T])
   : FeatureBuilder[List[T]] = new FeatureBuilder[List[T]] {
-    override def toFeatures(record: List[T]): Features.Builder =
-      featuresOf(mapping.toSeq(record))
-    override def fromFeatures(features: Features): List[T] =
-      mapping.fromSeq(features.getFeatureMap.values().asScala.head).toList
+    override def toFeatures(record: List[T], nameOrPrefix: Option[String]): Features.Builder =
+      featuresOf(nameOrPrefix, mapping.toSeq(record))
+    override def fromFeatures(features: Features, nameOrPrefix: Option[String]): List[T] =
+      mapping.fromSeq(getFeature(nameOrPrefix, features)).toList
   }
 
   implicit def toExampleConverter[T](implicit fb: FeatureBuilder[T]): ExampleConverter[T] =
     new ExampleConverter[T] {
       override def toExample(record: T): Example = {
         Example.newBuilder()
-          .setFeatures(fb.toFeatures(record))
+          .setFeatures(fb.toFeatures(record, None))
           .build()
       }
 
-      override def fromExample(example: Example): T = fb.fromFeatures(example.getFeatures)
+      override def fromExample(example: Example): T = fb.fromFeatures(example.getFeatures, None)
     }
 
-  private def featuresOf(feature: Feature): Features.Builder =
-    Features.newBuilder().putFeature("", feature)
+  private def featuresOf(name: Option[String], feature: Feature): Features.Builder =
+    Features.newBuilder().putFeature(name.getOrElse(""), feature)
+
+  private def getFeature(name: Option[String], features: Features): Feature =
+    features.getFeatureOrThrow(name.getOrElse(""))
 }
