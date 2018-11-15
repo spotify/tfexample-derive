@@ -107,6 +107,41 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     newRecord.myInts.map(_.int) shouldEqual List(2, 3)
   }
 
+  it should "support option types" in {
+    case class OptionRecord(int: Option[Int], floats: Option[List[Float]], inner: Option[Inner])
+    case class Inner(bool: Boolean)
+    val converter = ExampleConverter[OptionRecord]
+
+    // All Some()
+    val record1 = OptionRecord(Some(2), Some(List(1.0f, 2.0f)), Some(Inner(true)))
+    val expected1 = Example.newBuilder()
+      .setFeatures(Features.newBuilder()
+        .putFeature("Some#int.value", longFeat(2L))
+        .putFeature("Some#floats.value", floatFeat(1.0f, 2.0f))
+        .putFeature("Some#inner.value.bool", longFeat(1L))
+        .build)
+      .build()
+    val example1 = converter.toExample(record1)
+    // We can't assert directly due to Some.x vs Some.value difference between scala 2.11 / 2.12
+    val fMap = expected1.getFeatures.getFeatureMap.asScala.toMap
+    fMap.size shouldEqual 3
+    featureOfKeyPrefix(fMap, "Some#int").get shouldEqual longFeat(2L)
+    featureOfKeyPrefix(fMap, "Some#float").get shouldEqual floatFeat(1.0f, 2.0f)
+    featureOfKeyPrefix(fMap, "Some#inner").get shouldEqual longFeat(1L)
+    converter.fromExample(example1) shouldEqual record1
+
+    // All None
+    val record2 = OptionRecord(None, None, None)
+    val expected2 = Example.newBuilder()
+      .build()
+    val example2 = converter.toExample(record2)
+    featuresOf(example2) shouldEqual featuresOf(expected2)
+    converter.fromExample(example2) shouldEqual record2
+  }
+
+  private def featureOfKeyPrefix(fMap: Map[String, Feature], prefix: String): Option[Feature] =
+    fMap.keys.find(_.startsWith(prefix)).map(key => fMap(key))
+
   private def longFeat(longs: Long*): Feature = {
     val jLongs = longs.asJava.asInstanceOf[JIterable[JLong]]
     Feature.newBuilder().setInt64List(Int64List.newBuilder().addAllValue(jLongs)).build()
