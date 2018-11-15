@@ -13,8 +13,9 @@ class ExampleConverterTest extends FlatSpec with Matchers {
 
   "ExampleConversion" should "support basic types" in {
     case class BasicRecord(int: Int, long: Long, float: Float, bytes: ByteString, string: String)
-    val actual = ExampleConverter[BasicRecord].toExample(
-      BasicRecord(1, 2, 3.0f, ByteString.copyFromUtf8("hello"), "world"))
+    val converter = ExampleConverter[BasicRecord]
+    val record = BasicRecord(1, 2, 3.0f, ByteString.copyFromUtf8("hello"), "world")
+    val actual = converter.toExample(record)
     val expected = Example.newBuilder()
         .setFeatures(Features.newBuilder()
           .putFeature("int", longFeat(1L))
@@ -24,24 +25,30 @@ class ExampleConverterTest extends FlatSpec with Matchers {
           .putFeature("string", stringFeat("world"))
         .build)
     featuresOf(actual) shouldEqual featuresOf(expected)
+    converter.fromExample(actual) shouldEqual record
   }
 
   it should "support nested case class" in {
     case class Record(f1: Int, f2: Long, inner: Inner)
     case class Inner(f3: Long)
-    val example = ExampleConverter[Record].toExample(Record(1, 2l, Inner(3l)))
+    val record = Record(1, 2l, Inner(3l))
+    val converter = ExampleConverter[Record]
+    val example = converter.toExample(record)
     example.getFeatures.getFeatureCount shouldEqual 3
     val features = example.getFeatures.getFeatureMap
     features.get("f1").getInt64List shouldEqual Int64List.newBuilder().addValue(1).build
     features.get("f2").getInt64List shouldEqual Int64List.newBuilder().addValue(2).build
     features.get("inner.f3").getInt64List shouldEqual Int64List.newBuilder().addValue(3).build
+    converter.fromExample(example) shouldEqual record
   }
 
   it should "handle duplicate feature names" in {
     case class Outer(f: Int, middle: Middle)
     case class Middle(f: Int, inner: Inner)
     case class Inner(f: Int)
-    val example = ExampleConverter[Outer].toExample(Outer(1, Middle(2, Inner(3))))
+    val record = Outer(1, Middle(2, Inner(3)))
+    val converter = ExampleConverter[Outer]
+    val example = converter.toExample(record)
     example.getFeatures.getFeatureCount shouldEqual 3
     val expectedFeatures = Map[String, Feature](
       "f" -> longFeat(1L),
@@ -49,6 +56,7 @@ class ExampleConverterTest extends FlatSpec with Matchers {
       "middle.inner.f" -> longFeat(3L)
     ).asJava
     featuresOf(example) shouldEqual expectedFeatures
+    converter.fromExample(example) shouldEqual record
   }
 
   it should "support collection types" in {
@@ -82,9 +90,9 @@ class ExampleConverterTest extends FlatSpec with Matchers {
         myInts => fromInts(myInts.map(_.int)))
 
     case class Record(id: String, myInt: MyInt, myInts: List[MyInt])
-    val conv = ExampleConverter[Record]
-    val example = conv.toExample(
-      Record("1", new MyInt(1), List(new MyInt(2), new MyInt(3))))
+    val converter = ExampleConverter[Record]
+    val record = Record("1", new MyInt(1), List(new MyInt(2), new MyInt(3)))
+    val example = converter.toExample(record)
     val expected = Example.newBuilder()
       .setFeatures(Features.newBuilder()
         .putFeature("id", stringFeat("1"))
@@ -93,23 +101,10 @@ class ExampleConverterTest extends FlatSpec with Matchers {
       )
       .build()
     featuresOf(example) shouldEqual featuresOf(expected)
-  }
-
-  it should "support basic types from examples" in {
-    case class BasicRecord(int: Int, long: Long, float: Float, bytes: ByteString, string: String)
-    val example = Example.newBuilder()
-      .setFeatures(Features.newBuilder()
-        .putFeature("int", longFeat(1L))
-        .putFeature("long", longFeat(2L))
-        .putFeature("float", floatFeat(3.0f))
-        .putFeature("bytes", stringFeat("hello"))
-        .putFeature("string", stringFeat("world"))
-        .build)
-      .build()
-    val expected = BasicRecord(1, 2, 3.0f, ByteString.copyFromUtf8("hello"), "world")
-    val actual = ExampleConverter[BasicRecord].fromExample(example)
-
-    actual shouldEqual expected
+    val newRecord = converter.fromExample(example)
+    newRecord.id shouldEqual "1"
+    newRecord.myInt.int shouldEqual 1
+    newRecord.myInts.map(_.int) shouldEqual List(2, 3)
   }
 
   private def longFeat(longs: Long*): Feature = {
