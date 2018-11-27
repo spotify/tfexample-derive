@@ -41,53 +41,54 @@ trait Implicits {
   implicit val stringTensorflowMapping: TensorflowMapping[String] =
     TensorflowMapping[String](toStrings, fromStrings)
 
-  implicit def singletonFeatureBuilder[T](implicit mapping: TensorflowMapping[T])
-  : FeatureBuilder[T] =
+  implicit def singletonFeatureBuilder[T](
+    implicit mapping: TensorflowMapping[T]): FeatureBuilder[T] =
     new FeatureBuilder[T] {
       override def toFeatures(record: T, nameOrPrefix: Option[String]): Features.Builder =
         featuresOf(nameOrPrefix, mapping.toFeature(record))
-      override def fromFeatures(features: Features, nameOrPrefix: Option[String]): T = {
+      override def fromFeatures(features: Features, nameOrPrefix: Option[String]): T =
         mapping.fromFeature(getFeature(nameOrPrefix, features))
-      }
     }
 
   // Collections (TODO: can these be refactored?)
-  implicit def iterableFb[T](implicit mapping: TensorflowMapping[T])
-  : FeatureBuilder[Iterable[T]] = new FeatureBuilder[Iterable[T]] {
-    override def toFeatures(record: Iterable[T], nameOrPrefix: Option[String]): Features.Builder =
-      featuresOf(nameOrPrefix, mapping.toSeq(record.toSeq))
-    override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Iterable[T] =
-      mapping.fromSeq(getFeature(nameOrPrefix, features))
-  }
+  implicit def iterableFb[T](implicit mapping: TensorflowMapping[T]): FeatureBuilder[Iterable[T]] =
+    new FeatureBuilder[Iterable[T]] {
+      override def toFeatures(record: Iterable[T], nameOrPrefix: Option[String]): Features.Builder =
+        featuresOf(nameOrPrefix, mapping.toSeq(record.toSeq))
+      override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Iterable[T] =
+        mapping.fromSeq(getFeature(nameOrPrefix, features))
+    }
 
-  implicit def seqFb[T](implicit mapping: TensorflowMapping[T])
-  : FeatureBuilder[Seq[T]] = new FeatureBuilder[Seq[T]] {
-    override def toFeatures(record: Seq[T], nameOrPrefix: Option[String]): Features.Builder =
-      featuresOf(nameOrPrefix, mapping.toSeq(record))
-    override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Seq[T] =
-      mapping.fromSeq(getFeature(nameOrPrefix, features))
-  }
+  implicit def seqFb[T](implicit mapping: TensorflowMapping[T]): FeatureBuilder[Seq[T]] =
+    new FeatureBuilder[Seq[T]] {
+      override def toFeatures(record: Seq[T], nameOrPrefix: Option[String]): Features.Builder =
+        featuresOf(nameOrPrefix, mapping.toSeq(record))
+      override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Seq[T] =
+        mapping.fromSeq(getFeature(nameOrPrefix, features))
+    }
 
-  implicit def arrFb[T: ClassTag](implicit mapping: TensorflowMapping[T])
-  : FeatureBuilder[Array[T]] = new FeatureBuilder[Array[T]] {
-    override def toFeatures(record: Array[T], nameOrPrefix: Option[String]): Features.Builder =
-      featuresOf(nameOrPrefix, mapping.toSeq(record))
-    override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Array[T] =
-      mapping.fromSeq(getFeature(nameOrPrefix, features)).toArray
-  }
+  implicit def arrFb[T: ClassTag](
+    implicit mapping: TensorflowMapping[T]): FeatureBuilder[Array[T]] =
+    new FeatureBuilder[Array[T]] {
+      override def toFeatures(record: Array[T], nameOrPrefix: Option[String]): Features.Builder =
+        featuresOf(nameOrPrefix, mapping.toSeq(record))
+      override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Array[T] =
+        mapping.fromSeq(getFeature(nameOrPrefix, features)).toArray
+    }
 
-  implicit def listFb[T](implicit mapping: TensorflowMapping[T])
-  : FeatureBuilder[List[T]] = new FeatureBuilder[List[T]] {
-    override def toFeatures(record: List[T], nameOrPrefix: Option[String]): Features.Builder =
-      featuresOf(nameOrPrefix, mapping.toSeq(record))
-    override def fromFeatures(features: Features, nameOrPrefix: Option[String]): List[T] =
-      mapping.fromSeq(getFeature(nameOrPrefix, features)).toList
-  }
+  implicit def listFb[T](implicit mapping: TensorflowMapping[T]): FeatureBuilder[List[T]] =
+    new FeatureBuilder[List[T]] {
+      override def toFeatures(record: List[T], nameOrPrefix: Option[String]): Features.Builder =
+        featuresOf(nameOrPrefix, mapping.toSeq(record))
+      override def fromFeatures(features: Features, nameOrPrefix: Option[String]): List[T] =
+        mapping.fromSeq(getFeature(nameOrPrefix, features)).toList
+    }
 
   implicit def toExampleConverter[T](implicit fb: FeatureBuilder[T]): ExampleConverter[T] =
     new ExampleConverter[T] {
       override def toExample(record: T): Example = {
-        Example.newBuilder()
+        Example
+          .newBuilder()
           .setFeatures(fb.toFeatures(record, None))
           .build()
       }
