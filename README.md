@@ -1,7 +1,7 @@
 tfexample-derive
 ==================
 
-[![Build Status](https://travis-ci.com/andrewsmartin/tfexample-derive.svg?branch=master)](https://travis-ci.org/andrewsmartin/tfexample-derive)
+[![Build Status](https://travis-ci.org/andrewsmartin/tfexample-derive.svg?branch=master)](https://travis-ci.org/andrewsmartin/tfexample-derive)
 [![codecov.io](https://codecov.io/github/andrewsmartin/tfexample-derive/coverage.svg?branch=master)](https://codecov.io/github/andrewsmartin/tfexample-derive?branch=master)
 [![GitHub license](https://img.shields.io/github/license/andrewsmartin/tfexample-derive.svg)](./LICENSE)
 
