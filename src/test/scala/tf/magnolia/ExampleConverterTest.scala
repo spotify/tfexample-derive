@@ -22,6 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.example._
 import TensorflowMapping._
 import java.lang.{Float => JFloat, Iterable => JIterable, Long => JLong}
+import java.net.URI
 import java.util
 
 import scala.collection.JavaConverters._
@@ -105,30 +106,24 @@ class ExampleConverterTest extends FlatSpec with Matchers {
   }
 
   it should "support custom types" in {
-    class MyInt(val int: Int)
+    implicit val uriType: TensorflowMapping[URI] =
+      TensorflowMapping[URI](toStrings(_).map(URI.create), xs => fromStrings(xs.map(_.toString)))
 
-    implicit val myIntType: TensorflowMapping[MyInt] =
-      TensorflowMapping[MyInt](f => toInts(f).map(n => new MyInt(n)),
-                               myInts => fromInts(myInts.map(_.int)))
-
-    case class Record(id: String, myInt: MyInt, myInts: List[MyInt])
+    case class Record(uri: URI, uris: List[URI])
     val converter = ExampleConverter[Record]
-    val record = Record("1", new MyInt(1), List(new MyInt(2), new MyInt(3)))
+    val record = Record(URI.create("www.google.com"), List(URI.create("www.foobar.com")))
     val example = converter.toExample(record)
     val expected = Example
       .newBuilder()
       .setFeatures(
         Features
           .newBuilder()
-          .putFeature("id", stringFeat("1"))
-          .putFeature("myInt", longFeat(1L))
-          .putFeature("myInts", longFeat(2L, 3L)))
-      .build()
+          .putFeature("uri", stringFeat("www.google.com"))
+          .putFeature("uris", stringFeat("www.foobar.com"))
+          .build())
     featuresOf(example) shouldEqual featuresOf(expected)
     val newRecord = converter.fromExample(example)
-    newRecord.id shouldEqual "1"
-    newRecord.myInt.int shouldEqual 1
-    newRecord.myInts.map(_.int) shouldEqual List(2, 3)
+    newRecord shouldEqual record
   }
 
   it should "support option types" in {
