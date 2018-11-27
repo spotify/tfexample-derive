@@ -1,15 +1,15 @@
-tf-magnolia
+tfexample-derive
 ==================
 
-[![Build Status](https://travis-ci.com/andrewsmartin/tf-magnolia.svg?branch=master)](https://travis-ci.org/andrewsmartin/tf-magnolia)
-[![codecov.io](https://codecov.io/github/andrewsmartin/tf-magnolia/coverage.svg?branch=master)](https://codecov.io/github/andrewsmartin/tf-magnolia?branch=master)
-[![GitHub license](https://img.shields.io/github/license/andrewsmartin/tf-magnolia.svg)](./LICENSE)
+[![Build Status](https://travis-ci.com/andrewsmartin/tfexample-derive.svg?branch=master)](https://travis-ci.org/andrewsmartin/tfexample-derive)
+[![codecov.io](https://codecov.io/github/andrewsmartin/tfexample-derive/coverage.svg?branch=master)](https://codecov.io/github/andrewsmartin/tfexample-derive?branch=master)
+[![GitHub license](https://img.shields.io/github/license/andrewsmartin/tfexample-derive.svg)](./LICENSE)
 
 [magnolia](https://github.com/propensive/magnolia)-based conversions between case classes and tensorflow Example protobufs.
 
 
 ```scala
-libraryDependencies += "com.github.andrewsmartin" %% "tf-magnolia" % "0.1.0"
+libraryDependencies += "com.github.andrewsmartin" %% "tfexample-derive" % "0.1.0"
 ```
 
 # Usage
@@ -17,7 +17,7 @@ libraryDependencies += "com.github.andrewsmartin" %% "tf-magnolia" % "0.1.0"
 `ExampleConverter[T]` is a typeclass that converts between case class `T` and Tensorflow Example Protobuf types:
 
 ```scala
-import tf.magnolia._
+import com.spotify.tfexample.derive._
 
 case class Data(floats: Array[Float], longs: Array[Long], strings: List[String], label: String)
 
@@ -32,7 +32,7 @@ val data2 = converter.fromExample(example)
 In addition to the types supported out of the box, custom types are also supported by providing an implicit `TensorflowMapping`:
 
 ```scala
-import tf.magnolia.TensorflowMapping._
+import com.spotify.tfexample.derive.TensorflowMapping._
 
 implicit val uriType: TensorflowMapping[URI] =
   TensorflowMapping[URI](toStrings(_).map(URI.create), xs => fromStrings(xs.map(_.toString)))

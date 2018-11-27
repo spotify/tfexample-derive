@@ -1,4 +1,4 @@
-name := "tf-magnolia"
+name := "tfexample-derive"
 description := "Provides compile-time derivation of conversions between Scala case classes and " +
   "Tensorflow Example protcol buffers"
 
