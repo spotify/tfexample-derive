@@ -50,7 +50,6 @@ trait Implicits {
         mapping.fromFeature(getFeature(nameOrPrefix, features))
     }
 
-  // Collections (TODO: can these be refactored?)
   implicit def iterableFb[T](implicit mapping: TensorflowMapping[T]): FeatureBuilder[Iterable[T]] =
     new FeatureBuilder[Iterable[T]] {
       override def toFeatures(record: Iterable[T], nameOrPrefix: Option[String]): Features.Builder =
