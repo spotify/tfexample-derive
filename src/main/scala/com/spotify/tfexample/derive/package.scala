@@ -15,6 +15,6 @@
  * under the License.
  */
 
-package tf
+package com.spotify.tfexample
 
-package object magnolia extends Implicits
+package object derive extends Implicits

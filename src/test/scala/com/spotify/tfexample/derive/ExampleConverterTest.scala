@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package tf.magnolia
+package com.spotify.tfexample.derive
 
 import com.google.protobuf.ByteString
 import org.scalatest.{FlatSpec, Matchers}
