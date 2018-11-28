@@ -22,6 +22,7 @@ import org.tensorflow.example._
 import TensorflowMapping._
 
 import scala.reflect.ClassTag
+import scala.util.Try
 
 trait Implicits {
   implicit val booleanTensorflowMapping: TensorflowMapping[Boolean] =
@@ -48,6 +49,14 @@ trait Implicits {
         featuresOf(nameOrPrefix, mapping.toFeature(record))
       override def fromFeatures(features: Features, nameOrPrefix: Option[String]): T =
         mapping.fromFeature(getFeature(nameOrPrefix, features))
+    }
+
+  implicit def optionFb[T](implicit fb: FeatureBuilder[T]): FeatureBuilder[Option[T]] =
+    new FeatureBuilder[Option[T]] {
+      override def toFeatures(record: Option[T], nameOrPrefix: Option[String]): Features.Builder =
+        record.fold(Features.newBuilder())(elem => fb.toFeatures(elem, nameOrPrefix))
+      override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Option[T] =
+        Try(fb.fromFeatures(features, nameOrPrefix)).toOption
     }
 
   implicit def iterableFb[T](implicit mapping: TensorflowMapping[T]): FeatureBuilder[Iterable[T]] =
