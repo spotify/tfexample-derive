@@ -2,7 +2,7 @@ name := "tfexample-derive"
 description := "Provides compile-time derivation of conversions between Scala case classes and " +
   "Tensorflow Example protcol buffers"
 
-val magnoliaVersion = "0.7.1"
+val magnoliaVersion = "0.9.1"
 val scalaTestVersion = "3.0.5"
 val tensorflowVersion = "1.7.0"
 
