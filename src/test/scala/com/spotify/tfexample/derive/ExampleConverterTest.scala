@@ -127,33 +127,30 @@ class ExampleConverterTest extends FlatSpec with Matchers {
   }
 
   it should "support option types" in {
-    case class OptionRecord(int: Option[Int], floats: Option[List[Float]], inner: Option[Inner])
-    case class Inner(bool: Boolean)
+    case class OptionRecord(int: Option[Int], middle: Middle)
+    case class Middle(floats: Option[List[Float]], inner: Option[Inner])
+    case class Inner(bool: Option[Boolean])
     val converter = ExampleConverter[OptionRecord]
 
     // All Some()
-    val record1 = OptionRecord(Some(2), Some(List(1.0f, 2.0f)), Some(Inner(true)))
+    val record1 = OptionRecord(Some(2), Middle(Some(List(1.0f, 2.0f)), Some(Inner(Some(true)))))
     val expected1 = Example
       .newBuilder()
       .setFeatures(
         Features
           .newBuilder()
-          .putFeature("Some#int.value", longFeat(2L))
-          .putFeature("Some#floats.value", floatFeat(1.0f, 2.0f))
-          .putFeature("Some#inner.value.bool", longFeat(1L))
+          .putFeature("int", longFeat(2L))
+          .putFeature("middle.floats", floatFeat(1.0f, 2.0f))
+          .putFeature("middle.inner.bool", longFeat(1L))
           .build)
       .build()
     val example1 = converter.toExample(record1)
-    // We can't assert directly due to Some.x vs Some.value difference between scala 2.11 / 2.12
-    val fMap = expected1.getFeatures.getFeatureMap.asScala.toMap
-    fMap.size shouldEqual 3
-    featureOfKeyPrefix(fMap, "Some#int").get shouldEqual longFeat(2L)
-    featureOfKeyPrefix(fMap, "Some#float").get shouldEqual floatFeat(1.0f, 2.0f)
-    featureOfKeyPrefix(fMap, "Some#inner").get shouldEqual longFeat(1L)
+    featuresOf(example1) shouldEqual featuresOf(expected1)
+    val newRecord = converter.fromExample(example1)
     converter.fromExample(example1) shouldEqual record1
 
     // All None
-    val record2 = OptionRecord(None, None, None)
+    val record2 = OptionRecord(None, Middle(None, Some(Inner(None))))
     val expected2 = Example
       .newBuilder()
       .build()
