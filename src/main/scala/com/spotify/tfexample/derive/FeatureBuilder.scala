@@ -49,7 +49,9 @@ object FeatureBuilder {
       }
     }
 
-  def dispatch[T](sealedTrait: SealedTrait[Typeclass, T]): FeatureBuilder[T] = ???
+  // Hack to force compiler errors for List[T] where T is another case class
+  private trait Dispatchable[T]
+  def dispatch[T: Dispatchable](sealedTrait: SealedTrait[Typeclass, T]): FeatureBuilder[T] = ???
 
   implicit def gen[T]: Typeclass[T] = macro Magnolia.gen[T]
 }
