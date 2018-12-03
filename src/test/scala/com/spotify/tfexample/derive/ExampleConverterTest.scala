@@ -159,6 +159,31 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     converter.fromExample(example2) shouldEqual record2
   }
 
+  it should "support custom TensorflowMapping on case class" in {
+    case class Record(xs: List[Inner])
+    case class Inner(x: Int)
+
+    implicit val innerMapping: TensorflowMapping[Inner] = TensorflowMapping[Inner](
+      toLongs(_).map(l => Inner(l.toInt)),
+      inners => fromLongs(inners.map(_.x.toLong))
+    )
+
+    val converter = ExampleConverter[Record]
+    val record = Record(List(Inner(1), Inner(2), Inner(3)))
+    val expected = Example
+      .newBuilder()
+      .setFeatures(
+        Features
+          .newBuilder()
+          .putFeature("xs", longFeat(1L, 2L, 3L))
+          .build)
+      .build
+    val example = converter.toExample(record)
+    featuresOf(example) shouldEqual featuresOf(expected)
+    val record2 = converter.fromExample(example)
+    record2 shouldEqual record
+  }
+
   private def featureOfKeyPrefix(fMap: Map[String, Feature], prefix: String): Option[Feature] =
     fMap.keys.find(_.startsWith(prefix)).map(key => fMap(key))
 
