@@ -20,6 +20,7 @@ package com.spotify.tfexample.derive
 import org.tensorflow.example._
 import magnolia._
 
+import scala.annotation.implicitNotFound
 import scala.language.experimental.macros
 
 trait FeatureBuilder[T] {
@@ -50,6 +51,7 @@ object FeatureBuilder {
     }
 
   // Hack to force compiler errors for List[T] where T is another case class
+  @implicitNotFound("cannot derive FeatureBuilder for type ${T}")
   private trait Dispatchable[T]
   def dispatch[T: Dispatchable](sealedTrait: SealedTrait[Typeclass, T]): FeatureBuilder[T] = ???
 
