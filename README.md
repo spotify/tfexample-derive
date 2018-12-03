@@ -1,15 +1,15 @@
 tfexample-derive
 ==================
 
-[![Build Status](https://travis-ci.org/andrewsmartin/tfexample-derive.svg?branch=master)](https://travis-ci.org/andrewsmartin/tfexample-derive)
-[![codecov.io](https://codecov.io/github/andrewsmartin/tfexample-derive/coverage.svg?branch=master)](https://codecov.io/github/andrewsmartin/tfexample-derive?branch=master)
-[![GitHub license](https://img.shields.io/github/license/andrewsmartin/tfexample-derive.svg)](./LICENSE)
+[![Build Status](https://travis-ci.com/spotify/tfexample-derive.svg?token=RuxhZ5UxBe3qBBNtxKVz&branch=master)](https://github.com/spotify/tfexample-derive)
+[![codecov.io](https://codecov.io/github/spotify/tfexample-derive/coverage.svg?branch=master)](https://codecov.io/github/spotify/tfexample-derive?branch=master)
+[![GitHub license](https://img.shields.io/github/license/spotify/tfexample-derive.svg)](./LICENSE)
 
 [magnolia](https://github.com/propensive/magnolia)-based conversions between case classes and tensorflow Example protobufs.
 
 
 ```scala
-libraryDependencies += "com.github.andrewsmartin" %% "tfexample-derive" % "0.1.0"
+libraryDependencies += "com.spotify" %% "tfexample-derive" % "0.1.0"
 ```
 
 # Usage
