@@ -5,7 +5,7 @@ tfexample-derive
 [![codecov.io](https://codecov.io/github/spotify/tfexample-derive/coverage.svg?branch=master)](https://codecov.io/github/spotify/tfexample-derive?branch=master)
 [![GitHub license](https://img.shields.io/github/license/spotify/tfexample-derive.svg)](./LICENSE)
 
-[magnolia](https://github.com/propensive/magnolia)-based conversions between case classes and tensorflow Example protobufs.
+[Magnolia](https://github.com/propensive/magnolia)-based conversions between case classes and tensorflow Example protobufs.
 
 
 ```scala
