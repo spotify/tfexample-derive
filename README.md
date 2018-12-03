@@ -138,3 +138,7 @@ val converter = ExampleConverter[Record]
 val record = Record(URI.create("www.google.com"), List(URI.create("www.foobar.com")))
 val example = converter.toExample(record)
 ```
+
+# Code of Conduct
+
+This project adheres to the [Open Code of Conduct](https://github.com/spotify/code-of-conduct/blob/master/code-of-conduct.md).
