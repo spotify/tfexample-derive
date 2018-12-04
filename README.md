@@ -38,12 +38,12 @@ Tensorflow Example is an inherently flat structure - essentially a map of `(Stri
 - FloatList
 - BytesList
 
-That said, a converter can be automatically derived for types which naturally correspond to these feature types - `Int, Long, Float, Double, ByteString, String` etc, and by extension
+A converter can be automatically derived for types which naturally correspond to these feature types - `Int, Long, Float, Double, ByteString, String` etc, and by extension
 collections of these types including `Array, Seq, List`. `Option` is also supported, simply by not encoding `None` values in the resulting `Example`. See the below section on custom types for an example of how to add encodings for new types.
 
 ### Nesting
 
-As mentioned above, Example is a flat structure, but a converter can be derived in certain cases even for nested case classes. "Flattening" is achieved by using the variable name of the nested case
+As mentioned above, Example is a flat structure, but a converter can be derived in certain cases even for nested case classes. Flattening is achieved by using the field name of the nested case
 class as a namespace for the features belonging to that class. For example:
 
 ```scala
@@ -99,8 +99,8 @@ Error: could not find implicit value for parameter converter: com.spotify.tfexam
     ExampleConverter[Record]
 ```
 
-To drill down to find the particular field that breaks the derivation, we can get more information from Magnolia by directly calling
-the macro. Replace the call to `ExampleConverter` with the following:
+To drill down and find the particular field that breaks the derivation, we can get more information from Magnolia by directly calling
+the macro. Replace the call to `ExampleConverter` with a call to `FeatureBuilder.gen`:
 
 ```scala
 import com.spotify.tfexample.derive.FeatureBuilder
