@@ -25,6 +25,21 @@ val commonSettings = Seq(
   scalaVersion := "2.12.8",
   crossScalaVersions := Seq("2.11.12", "2.12.8"),
   scalacOptions ++= Seq("-target:jvm-1.8", "-deprecation", "-feature", "-unchecked"),
+  publishTo := Some(if (isSnapshot.value) {
+    Opts.resolver.sonatypeSnapshots
+  } else {
+    Opts.resolver.sonatypeStaging
+  }),
+  releaseCrossBuild := true,
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  publishMavenStyle := true,
+  publishArtifact in Test := false,
+  sonatypeProfileName := "com.spotify",
+  licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+  homepage := Some(url("https://github.com/spotify/tfexample-derive")),
+  scmInfo := Some(
+    ScmInfo(url("https://github.com/spotify/tfexample-derive.git"),
+            "scm:git:git@github.com:spotify/tfexample-derive.git"))
 )
 
 lazy val root: Project = project
