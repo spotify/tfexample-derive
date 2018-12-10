@@ -39,7 +39,17 @@ val commonSettings = Seq(
   homepage := Some(url("https://github.com/spotify/tfexample-derive")),
   scmInfo := Some(
     ScmInfo(url("https://github.com/spotify/tfexample-derive.git"),
-            "scm:git:git@github.com:spotify/tfexample-derive.git"))
+            "scm:git:git@github.com:spotify/tfexample-derive.git")),
+  developers := List(
+    Developer(id = "andrewsmartin",
+              name = "Andrew Martin",
+              email = "andrewsmartin.mg@gmail.com",
+              url = url("https://twitter.com/andrew_martin92")),
+    Developer(id = "daikeshi",
+              name = "Keshi Dai",
+              email = "keshi.dai@gmail.com",
+              url = url("https://twitter.com/daikeshi"))
+  )
 )
 
 lazy val root: Project = project
