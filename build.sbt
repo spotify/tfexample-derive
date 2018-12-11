@@ -56,6 +56,7 @@ lazy val root: Project = project
   .in(file("."))
   .settings(commonSettings)
   .settings(
+    name := "tfexample-derive",
     publish / skip := true
   )
   .aggregate(core, bench)
