@@ -101,7 +101,8 @@ trait Implicits {
           .build()
       }
 
-      override def fromExample(example: Example): T = fb.fromFeatures(example.getFeatures, None)
+      override def fromExample(example: Example): Option[T] =
+        Try(fb.fromFeatures(example.getFeatures, None)).toOption
     }
 
   private def featuresOf(name: Option[String], feature: Feature): Features.Builder =
