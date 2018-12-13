@@ -25,7 +25,7 @@ case class Data(floats: Array[Float], longs: Array[Long], strings: List[String],
 val converter = ExampleConverter[Data]
 val data = Data(Array(1.5f, 2.5f), Array(1L, 2L), List("a", "b"), "x")
 val example = converter.toExample(data)
-val data2 = converter.fromExample(example)
+val data2: Option[Data] = converter.fromExample(example)
 ```
 
 The derivation makes use of [magnolia](https://github.com/propensive/magnolia), which provides a generic macro for materializing typeclasses
