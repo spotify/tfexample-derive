@@ -10,7 +10,7 @@ tfexample-derive
 
 
 ```scala
-libraryDependencies += "com.spotify" %% "tfexample-derive" % "0.2.0"
+libraryDependencies += "com.spotify" %% "tfexample-derive" % "0.2.1"
 ```
 
 # Usage
