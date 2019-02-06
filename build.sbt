@@ -15,7 +15,7 @@
  * under the License.
  */
 
-val magnoliaVersion = "0.9.1"
+val magnoliaVersion = "0.10.1-jto"
 val scalameterVersion = "0.10"
 val scalaTestVersion = "3.0.5"
 val tensorflowVersion = "1.12.0"
@@ -70,7 +70,7 @@ lazy val core: Project = project
     description := "Provides compile-time derivation of conversions between Scala case classes and " +
       "Tensorflow Example protcol buffers",
     libraryDependencies ++= Seq(
-      "com.propensive" %% "magnolia" % magnoliaVersion,
+      "me.lyh" %% "magnolia" % magnoliaVersion,
       "org.tensorflow" % "proto" % tensorflowVersion,
       "org.scalatest" %% "scalatest" % scalaTestVersion % Test
     )
