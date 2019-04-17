@@ -17,6 +17,8 @@
 
 package com.spotify.tfexample.derive
 
+import java.nio.ByteBuffer
+
 import com.google.protobuf.ByteString
 import org.tensorflow.example._
 import TensorflowMapping._
@@ -41,6 +43,8 @@ trait Implicits {
     TensorflowMapping[Array[Byte]](toByteArrays, fromByteArrays)
   implicit val stringTensorflowMapping: TensorflowMapping[String] =
     TensorflowMapping[String](toStrings, fromStrings)
+  implicit val byteBufferTensorflowMapping: TensorflowMapping[ByteBuffer] =
+    TensorflowMapping[ByteBuffer](toByteBuffers, fromByteBuffers)
 
   implicit def singletonFeatureBuilder[T](
     implicit mapping: TensorflowMapping[T]): FeatureBuilder[T] =

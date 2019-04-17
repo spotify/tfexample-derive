@@ -23,6 +23,8 @@ import org.tensorflow.example._
 import TensorflowMapping._
 import java.lang.{Float => JFloat, Iterable => JIterable, Long => JLong}
 import java.net.URI
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import java.util
 
 import scala.collection.JavaConverters._
@@ -30,9 +32,19 @@ import scala.collection.JavaConverters._
 class ExampleConverterTest extends FlatSpec with Matchers {
 
   "ExampleConversion" should "support basic types" in {
-    case class BasicRecord(int: Int, long: Long, float: Float, bytes: ByteString, string: String)
+    case class BasicRecord(int: Int,
+                           long: Long,
+                           float: Float,
+                           bytes: ByteString,
+                           string: String,
+                           byteBuffer: ByteBuffer)
     val converter = ExampleConverter[BasicRecord]
-    val record = BasicRecord(1, 2, 3.0f, ByteString.copyFromUtf8("hello"), "world")
+    val record = BasicRecord(1,
+                             2,
+                             3.0f,
+                             ByteString.copyFromUtf8("hello"),
+                             "world",
+                             ByteBuffer.wrap(ByteString.copyFromUtf8("bytes").toByteArray))
     val actual = converter.toExample(record)
     val expected = Example
       .newBuilder()
@@ -44,6 +56,7 @@ class ExampleConverterTest extends FlatSpec with Matchers {
           .putFeature("float", floatFeat(3.0f))
           .putFeature("bytes", stringFeat("hello"))
           .putFeature("string", stringFeat("world"))
+          .putFeature("byteBuffer", stringFeat("bytes"))
           .build)
     featuresOf(actual) shouldEqual featuresOf(expected)
     converter.fromExample(actual) shouldEqual Some(record)
