@@ -17,6 +17,8 @@
 
 package com.spotify.tfexample.derive
 
+import java.nio.ByteBuffer
+
 import com.google.protobuf.ByteString
 import org.tensorflow.example.{BytesList, Feature, FloatList, Int64List}
 
@@ -75,4 +77,8 @@ object TensorflowMapping {
   def fromStrings(xs: Seq[String]): Feature.Builder =
     fromByteStrings(xs.map(ByteString.copyFromUtf8))
   def toStrings(f: Feature): Seq[String] = toByteStrings(f).map(_.toStringUtf8)
+
+  def fromByteBuffers(xs: Seq[ByteBuffer]): Feature.Builder =
+    fromByteArrays(xs.map(_.array()))
+  def toByteBuffers(f: Feature): Seq[ByteBuffer] = toByteArrays(f).map(ByteBuffer.wrap)
 }
