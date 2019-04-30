@@ -24,7 +24,7 @@ import org.tensorflow.example.{BytesList, Feature, FloatList, Int64List}
 
 import scala.collection.JavaConverters._
 
-trait TensorflowMapping[T] {
+trait TensorflowMapping[T] extends Serializable {
   def toFeature(value: T): Feature = toSeq(Seq(value))
   def fromFeature(value: Feature): T = fromSeq(value).head
   def fromSeq(value: Feature): Seq[T]

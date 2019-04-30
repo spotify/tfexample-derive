@@ -26,7 +26,7 @@ import TensorflowMapping._
 import scala.reflect.ClassTag
 import scala.util.Try
 
-trait Implicits {
+trait Implicits extends Serializable {
   implicit val booleanTensorflowMapping: TensorflowMapping[Boolean] =
     TensorflowMapping[Boolean](toBooleans, fromBooleans)
   implicit val intTensorflowMapping: TensorflowMapping[Int] =
