@@ -79,6 +79,10 @@ object TensorflowMapping {
   def toStrings(f: Feature): Seq[String] = toByteStrings(f).map(_.toStringUtf8)
 
   def fromByteBuffers(xs: Seq[ByteBuffer]): Feature.Builder =
-    fromByteArrays(xs.map(_.array()))
+    fromByteStrings(xs.map { buf =>
+      val byteStr = ByteString.copyFrom(buf)
+      buf.rewind()
+      byteStr
+    })
   def toByteBuffers(f: Feature): Seq[ByteBuffer] = toByteArrays(f).map(ByteBuffer.wrap)
 }
