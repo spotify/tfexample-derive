@@ -17,6 +17,8 @@
 
 package com.spotify.tf.example.derive.bench
 
+import java.nio.ByteBuffer
+
 import com.spotify.tfexample.derive.ExampleConverter
 import org.scalameter.api._
 import org.tensorflow.example.Example
@@ -24,7 +26,7 @@ import org.tensorflow.example.Example
 object ExampleConverterBenchmark extends Bench.LocalTime {
   case class Record(int: Option[Int], middle: Middle)
   case class Middle(floats: Option[List[Float]], inner: Option[Inner])
-  case class Inner(bool: Option[Boolean], labels: List[String])
+  case class Inner(bool: Option[Boolean], labels: List[String], bytes: ByteBuffer)
 
   val testRecord: Record = Record(
     Some(1000),
@@ -33,7 +35,8 @@ object ExampleConverterBenchmark extends Bench.LocalTime {
       Some(
         Inner(
           Some(true),
-          List.fill(10)("label"))
+          List.fill(10)("label"),
+          ByteBuffer.wrap("bytes".getBytes))
       )))
 
   val converter: ExampleConverter[Record] = ExampleConverter[Record]
