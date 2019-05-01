@@ -23,7 +23,7 @@ import magnolia._
 import scala.annotation.implicitNotFound
 import scala.language.experimental.macros
 
-trait FeatureBuilder[T] {
+trait FeatureBuilder[T] extends Serializable {
   def toFeatures(record: T, nameOrPrefix: Option[String]): Features.Builder
   def fromFeatures(features: Features, nameOrPrefix: Option[String]): T
 }

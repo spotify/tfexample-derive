@@ -19,7 +19,7 @@ package com.spotify.tfexample.derive
 
 import org.tensorflow.example.Example
 
-trait ExampleConverter[T] {
+trait ExampleConverter[T] extends Serializable {
   def toExample(record: T): Example
   def fromExample(example: Example): Option[T]
 }
