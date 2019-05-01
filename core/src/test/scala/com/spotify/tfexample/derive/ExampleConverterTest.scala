@@ -24,7 +24,6 @@ import TensorflowMapping._
 import java.lang.{Float => JFloat, Iterable => JIterable, Long => JLong}
 import java.net.URI
 import java.nio.ByteBuffer
-import java.nio.charset.Charset
 import java.util
 
 import scala.collection.JavaConverters._
@@ -37,14 +36,16 @@ class ExampleConverterTest extends FlatSpec with Matchers {
                            float: Float,
                            bytes: ByteString,
                            string: String,
-                           byteBuffer: ByteBuffer)
+                           byteBuffer: ByteBuffer,
+                           readOnlyByteBuffer: ByteBuffer)
     val converter = ExampleConverter[BasicRecord]
     val record = BasicRecord(1,
                              2,
                              3.0f,
                              ByteString.copyFromUtf8("hello"),
                              "world",
-                             ByteBuffer.wrap(ByteString.copyFromUtf8("bytes").toByteArray))
+                             ByteBuffer.wrap("bytes".getBytes),
+                             ByteBuffer.wrap("readOnly".getBytes).asReadOnlyBuffer())
     val actual = converter.toExample(record)
     val expected = Example
       .newBuilder()
@@ -57,8 +58,8 @@ class ExampleConverterTest extends FlatSpec with Matchers {
           .putFeature("bytes", stringFeat("hello"))
           .putFeature("string", stringFeat("world"))
           .putFeature("byteBuffer", stringFeat("bytes"))
+          .putFeature("readOnlyByteBuffer", stringFeat("readOnly"))
           .build)
-    featuresOf(actual) shouldEqual featuresOf(expected)
     converter.fromExample(actual) shouldEqual Some(record)
   }
 
