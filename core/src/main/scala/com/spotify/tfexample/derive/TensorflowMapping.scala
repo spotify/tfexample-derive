@@ -80,8 +80,10 @@ object TensorflowMapping {
 
   def fromByteBuffers(xs: Seq[ByteBuffer]): Feature.Builder =
     fromByteStrings(xs.map { buf =>
+      val pos = buf.position()
       val byteStr = ByteString.copyFrom(buf)
-      buf.rewind()
+      // Preserve the original state of the buffer
+      buf.position(pos)
       byteStr
     })
   def toByteBuffers(f: Feature): Seq[ByteBuffer] = toByteArrays(f).map(ByteBuffer.wrap)
