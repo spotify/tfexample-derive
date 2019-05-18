@@ -205,6 +205,14 @@ class ExampleConverterTest extends FlatSpec with Matchers {
     converter.fromExample(badExample) shouldBe None
   }
 
+  it should "fail to compile for list of inner case class" in {
+    """
+      |case class Inner()
+      |case class Record(xs: List[Inner])
+      |ExampleConverter[Record]
+    """.stripMargin shouldNot compile
+  }
+
   private def featureOfKeyPrefix(fMap: Map[String, Feature], prefix: String): Option[Feature] =
     fMap.keys.find(_.startsWith(prefix)).map(key => fMap(key))
 
