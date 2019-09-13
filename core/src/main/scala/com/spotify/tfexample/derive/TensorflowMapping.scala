@@ -45,13 +45,14 @@ object TensorflowMapping {
         Int64List.newBuilder().addAllValue(xs.map(x => (if (x) 1L else 0L): java.lang.Long).asJava)
       )
   def toBooleans(f: Feature): Seq[Boolean] =
-    f.getInt64List.getValueList.asScala.map(x => if (x > 0) true else false)
+    f.getInt64List.getValueList.asScala.map(x => if (x > 0) true else false).toSeq
 
   def fromLongs(xs: Seq[Long]): Feature.Builder =
     Feature
       .newBuilder()
       .setInt64List(Int64List.newBuilder().addAllValue(xs.asInstanceOf[Seq[java.lang.Long]].asJava))
-  def toLongs(f: Feature): Seq[Long] = f.getInt64List.getValueList.asScala.asInstanceOf[Seq[Long]]
+  def toLongs(f: Feature): Seq[Long] =
+    f.getInt64List.getValueList.asScala.toSeq.asInstanceOf[Seq[Long]]
 
   def fromInts(xs: Seq[Int]): Feature.Builder = fromLongs(xs.map(_.toLong))
   def toInts(f: Feature): Seq[Int] = toLongs(f).map(_.toInt)
@@ -63,14 +64,14 @@ object TensorflowMapping {
         FloatList.newBuilder().addAllValue(xs.asInstanceOf[Seq[java.lang.Float]].asJava)
       )
   def toFloats(f: Feature): Seq[Float] =
-    f.getFloatList.getValueList.asScala.asInstanceOf[Seq[Float]]
+    f.getFloatList.getValueList.asScala.toSeq.asInstanceOf[Seq[Float]]
 
   def fromDoubles(xs: Seq[Double]): Feature.Builder = fromFloats(xs.map(_.toFloat))
   def toDoubles(f: Feature): Seq[Double] = toFloats(f).map(_.toDouble)
 
   def fromByteStrings(xs: Seq[ByteString]): Feature.Builder =
     Feature.newBuilder().setBytesList(BytesList.newBuilder().addAllValue(xs.asJava))
-  def toByteStrings(f: Feature): Seq[ByteString] = f.getBytesList.getValueList.asScala
+  def toByteStrings(f: Feature): Seq[ByteString] = f.getBytesList.getValueList.asScala.toSeq
 
   def fromByteArrays(xs: Seq[Array[Byte]]): Feature.Builder =
     fromByteStrings(xs.map(ByteString.copyFrom))
