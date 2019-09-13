@@ -16,7 +16,7 @@
  */
 
 val magnoliaVersion = "0.10.1-jto"
-val scalameterVersion = "0.10"
+val scalameterVersion = "0.19"
 val scalaTestVersion = "3.0.5"
 val tensorflowVersion = "1.13.1"
 
