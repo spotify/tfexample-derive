@@ -18,7 +18,7 @@
 val magnoliaVersion = "0.10.1-jto"
 val scalameterVersion = "0.10"
 val scalaTestVersion = "3.0.5"
-val tensorflowVersion = "1.13.1"
+val tensorflowVersion = "1.14.0"
 
 val commonSettings = Seq(
   organization := "com.spotify",
