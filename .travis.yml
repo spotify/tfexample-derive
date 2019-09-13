@@ -2,9 +2,13 @@ language: scala
 matrix:
   include:
     - scala: 2.11.12
-      jdk: openjdk8
+      jdk:
+      - openjdk8
+      - oraclejdk11
     - scala: 2.12.7
-      jdk: openjdk8
+      jdk:
+      - openjdk8
+      - oraclejdk11
 
 cache:
   directories:
