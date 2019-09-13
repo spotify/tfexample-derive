@@ -5,7 +5,7 @@ matrix:
       jdk:
       - openjdk8
       - oraclejdk11
-    - scala: 2.12.7
+    - scala: 2.12.10
       jdk:
       - openjdk8
       - oraclejdk11
