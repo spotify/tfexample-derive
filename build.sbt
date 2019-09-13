@@ -15,7 +15,7 @@
  * under the License.
  */
 
-val magnoliaVersion = "0.10.1-jto"
+val magnoliaVersion = "0.11.0"
 val scalameterVersion = "0.19"
 val scalaTestVersion = "3.0.8"
 val tensorflowVersion = "1.14.0"
@@ -59,6 +59,16 @@ val commonSettings = Seq(
   )
 )
 
+val magnoliaDependencies = Def.settings(
+  libraryDependencies ++= Seq(
+    if (scalaBinaryVersion.value == "2.11") {
+      "me.lyh" %% "magnolia" % "0.10.1-jto"
+    } else {
+      "com.propensive" %% "magnolia" % magnoliaVersion
+    }
+  )
+)
+
 lazy val root: Project = project
   .in(file("."))
   .settings(commonSettings)
@@ -77,10 +87,10 @@ lazy val core: Project = project
     description := "Provides compile-time derivation of conversions between Scala case classes and " +
       "Tensorflow Example protcol buffers",
     libraryDependencies ++= Seq(
-      "me.lyh" %% "magnolia" % magnoliaVersion,
       "org.tensorflow" % "proto" % tensorflowVersion,
       "org.scalatest" %% "scalatest" % scalaTestVersion % Test
-    )
+    ),
+    magnoliaDependencies
   )
 
 lazy val Benchmark = config("bench") extend Test
