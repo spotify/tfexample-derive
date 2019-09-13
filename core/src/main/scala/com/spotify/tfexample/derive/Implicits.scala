@@ -23,6 +23,7 @@ import com.google.protobuf.ByteString
 import org.tensorflow.example._
 import TensorflowMapping._
 
+import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
 import scala.util.Try
 
@@ -85,7 +86,7 @@ trait Implicits extends Serializable {
   ): FeatureBuilder[Array[T]] =
     new FeatureBuilder[Array[T]] {
       override def toFeatures(record: Array[T], nameOrPrefix: Option[String]): Features.Builder =
-        featuresOf(nameOrPrefix, mapping.toSeq(record))
+        featuresOf(nameOrPrefix, mapping.toSeq(record.toIndexedSeq))
       override def fromFeatures(features: Features, nameOrPrefix: Option[String]): Array[T] =
         mapping.fromSeq(getFeature(nameOrPrefix, features)).toArray
     }

@@ -9,6 +9,10 @@ matrix:
       jdk:
       - openjdk8
       - oraclejdk11
+    - scala: 2.13.0
+      jdk:
+      - openjdk8
+      - oraclejdk11
 
 cache:
   directories:
