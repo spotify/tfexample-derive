@@ -23,7 +23,6 @@ import com.google.protobuf.ByteString
 import org.tensorflow.example._
 import TensorflowMapping._
 
-import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
 import scala.util.Try
 

@@ -22,7 +22,7 @@ import java.nio.ByteBuffer
 import com.google.protobuf.ByteString
 import org.tensorflow.example.{BytesList, Feature, FloatList, Int64List}
 
-import scala.jdk.CollectionConverters._
+import scala.collection.JavaConverters._
 
 trait TensorflowMapping[T] extends Serializable {
   def toFeature(value: T): Feature = toSeq(Seq(value))
