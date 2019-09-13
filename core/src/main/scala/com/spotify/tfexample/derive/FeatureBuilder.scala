@@ -37,7 +37,8 @@ object FeatureBuilder {
         caseClass.parameters.foldLeft(Features.newBuilder()) { (fb, param) =>
           val newPrefix = nameOrPrefix.fold(param.label)(prefix => s"$prefix.${param.label}")
           fb.putAllFeature(
-            param.typeclass.toFeatures(param.dereference(record), Some(newPrefix)).getFeatureMap)
+            param.typeclass.toFeatures(param.dereference(record), Some(newPrefix)).getFeatureMap
+          )
           fb
         }
       }

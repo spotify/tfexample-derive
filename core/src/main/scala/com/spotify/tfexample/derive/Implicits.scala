@@ -47,7 +47,8 @@ trait Implicits extends Serializable {
     TensorflowMapping[ByteBuffer](toByteBuffers, fromByteBuffers)
 
   implicit def singletonFeatureBuilder[T](
-    implicit mapping: TensorflowMapping[T]): FeatureBuilder[T] =
+    implicit mapping: TensorflowMapping[T]
+  ): FeatureBuilder[T] =
     new FeatureBuilder[T] {
       override def toFeatures(record: T, nameOrPrefix: Option[String]): Features.Builder =
         featuresOf(nameOrPrefix, mapping.toFeature(record))
@@ -80,7 +81,8 @@ trait Implicits extends Serializable {
     }
 
   implicit def arrFb[T: ClassTag](
-    implicit mapping: TensorflowMapping[T]): FeatureBuilder[Array[T]] =
+    implicit mapping: TensorflowMapping[T]
+  ): FeatureBuilder[Array[T]] =
     new FeatureBuilder[Array[T]] {
       override def toFeatures(record: Array[T], nameOrPrefix: Option[String]): Features.Builder =
         featuresOf(nameOrPrefix, mapping.toSeq(record))

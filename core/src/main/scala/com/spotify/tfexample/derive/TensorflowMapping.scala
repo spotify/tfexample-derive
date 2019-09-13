@@ -42,7 +42,8 @@ object TensorflowMapping {
     Feature
       .newBuilder()
       .setInt64List(
-        Int64List.newBuilder().addAllValue(xs.map(x => (if (x) 1L else 0L): java.lang.Long).asJava))
+        Int64List.newBuilder().addAllValue(xs.map(x => (if (x) 1L else 0L): java.lang.Long).asJava)
+      )
   def toBooleans(f: Feature): Seq[Boolean] =
     f.getInt64List.getValueList.asScala.map(x => if (x > 0) true else false)
 
@@ -59,7 +60,8 @@ object TensorflowMapping {
     Feature
       .newBuilder()
       .setFloatList(
-        FloatList.newBuilder().addAllValue(xs.asInstanceOf[Seq[java.lang.Float]].asJava))
+        FloatList.newBuilder().addAllValue(xs.asInstanceOf[Seq[java.lang.Float]].asJava)
+      )
   def toFloats(f: Feature): Seq[Float] =
     f.getFloatList.getValueList.asScala.asInstanceOf[Seq[Float]]
 
