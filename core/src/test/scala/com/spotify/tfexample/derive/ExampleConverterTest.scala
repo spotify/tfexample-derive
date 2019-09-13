@@ -31,21 +31,25 @@ import scala.collection.JavaConverters._
 class ExampleConverterTest extends FlatSpec with Matchers {
 
   "ExampleConversion" should "support basic types" in {
-    case class BasicRecord(int: Int,
-                           long: Long,
-                           float: Float,
-                           bytes: ByteString,
-                           string: String,
-                           byteBuffer: ByteBuffer,
-                           readOnlyByteBuffer: ByteBuffer)
+    case class BasicRecord(
+      int: Int,
+      long: Long,
+      float: Float,
+      bytes: ByteString,
+      string: String,
+      byteBuffer: ByteBuffer,
+      readOnlyByteBuffer: ByteBuffer
+    )
     val converter = ExampleConverter[BasicRecord]
-    val record = BasicRecord(1,
-                             2,
-                             3.0f,
-                             ByteString.copyFromUtf8("hello"),
-                             "world",
-                             ByteBuffer.wrap("bytes".getBytes),
-                             ByteBuffer.wrap("readOnly".getBytes).asReadOnlyBuffer())
+    val record = BasicRecord(
+      1,
+      2,
+      3.0f,
+      ByteString.copyFromUtf8("hello"),
+      "world",
+      ByteBuffer.wrap("bytes".getBytes),
+      ByteBuffer.wrap("readOnly".getBytes).asReadOnlyBuffer()
+    )
     val actual = converter.toExample(record)
     val expected = Example
       .newBuilder()
@@ -59,7 +63,8 @@ class ExampleConverterTest extends FlatSpec with Matchers {
           .putFeature("string", stringFeat("world"))
           .putFeature("byteBuffer", stringFeat("bytes"))
           .putFeature("readOnlyByteBuffer", stringFeat("readOnly"))
-          .build)
+          .build
+      )
     converter.fromExample(actual) shouldEqual Some(record)
   }
 
@@ -109,7 +114,8 @@ class ExampleConverterTest extends FlatSpec with Matchers {
           .putFeature("ints", longFeat(1L, 2L, 3L))
           .putFeature("inner.floats", floatFeat(1.0f, 2.0f))
           .putFeature("inner.bools", longFeat(1L, 0L))
-          .build)
+          .build
+      )
     featuresOf(example) shouldEqual featuresOf(expected)
     // Test round trip
     val newRecord = converter.fromExample(example).get
@@ -134,7 +140,8 @@ class ExampleConverterTest extends FlatSpec with Matchers {
           .newBuilder()
           .putFeature("uri", stringFeat("www.google.com"))
           .putFeature("uris", stringFeat("www.foobar.com"))
-          .build())
+          .build()
+      )
     featuresOf(example) shouldEqual featuresOf(expected)
     val newRecord = converter.fromExample(example)
     newRecord shouldEqual Some(record)
@@ -156,7 +163,8 @@ class ExampleConverterTest extends FlatSpec with Matchers {
           .putFeature("int", longFeat(2L))
           .putFeature("middle.floats", floatFeat(1.0f, 2.0f))
           .putFeature("middle.inner.bool", longFeat(1L))
-          .build)
+          .build
+      )
       .build()
     val example1 = converter.toExample(record1)
     featuresOf(example1) shouldEqual featuresOf(expected1)
@@ -190,7 +198,8 @@ class ExampleConverterTest extends FlatSpec with Matchers {
         Features
           .newBuilder()
           .putFeature("xs", longFeat(1L, 2L, 3L))
-          .build)
+          .build
+      )
       .build
     val example = converter.toExample(record)
     featuresOf(example) shouldEqual featuresOf(expected)
