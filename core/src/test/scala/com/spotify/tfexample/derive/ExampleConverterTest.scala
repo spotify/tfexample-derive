@@ -27,6 +27,7 @@ import java.nio.ByteBuffer
 import java.util
 
 import scala.collection.JavaConverters._
+import scala.language.higherKinds
 
 class ExampleConverterTest extends FlatSpec with Matchers {
 
