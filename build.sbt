@@ -15,14 +15,14 @@
  * under the License.
  */
 
-val magnoliaVersion = "0.11.0"
+val magnoliaVersion = "0.12.2"
 val scalameterVersion = "0.19"
 val scalaTestVersion = "3.1.0"
 val tensorflowVersion = "1.15.0"
 
 val commonSettings = Seq(
   organization := "com.spotify",
-  scalaVersion := "2.13.0",
+  scalaVersion := "2.13.1",
   crossScalaVersions := Seq("2.11.12", "2.12.10", scalaVersion.value),
   scalacOptions ++= Seq("-target:jvm-1.8", "-deprecation", "-feature", "-unchecked"),
   publishTo := Some(if (isSnapshot.value) {

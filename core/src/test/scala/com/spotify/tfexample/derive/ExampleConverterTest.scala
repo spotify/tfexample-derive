@@ -31,7 +31,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class ExampleConverterTest extends AnyFlatSpec with Matchers {
-
   "ExampleConversion" should "support basic types" in {
     case class BasicRecord(
       int: Int,
