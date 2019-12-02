@@ -18,7 +18,6 @@
 package com.spotify.tfexample.derive
 
 import com.google.protobuf.ByteString
-import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.example._
 import TensorflowMapping._
 import java.lang.{Float => JFloat, Iterable => JIterable, Long => JLong}
@@ -28,8 +27,10 @@ import java.util
 
 import scala.collection.JavaConverters._
 import scala.language.higherKinds
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ExampleConverterTest extends FlatSpec with Matchers {
+class ExampleConverterTest extends AnyFlatSpec with Matchers {
 
   "ExampleConversion" should "support basic types" in {
     case class BasicRecord(
