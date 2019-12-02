@@ -17,7 +17,7 @@
 
 val magnoliaVersion = "0.11.0"
 val scalameterVersion = "0.19"
-val scalaTestVersion = "3.0.8"
+val scalaTestVersion = "3.1.0"
 val tensorflowVersion = "1.15.0"
 
 val commonSettings = Seq(
