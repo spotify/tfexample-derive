@@ -15,7 +15,7 @@
  * under the License.
  */
 
-val magnoliaVersion = "0.12.6"
+val magnoliaVersion = "0.12.8"
 val scalameterVersion = "0.19"
 val scalaTestVersion = "3.1.1"
 val tensorflowVersion = "1.15.0"
