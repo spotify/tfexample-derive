@@ -1,3 +1,7 @@
+# DEPRECATED
+
+Functionality of this library has been superceded by [Magnolify](https://github.com/spotify/magnolify). Use `magnolify-tensorflow` for `Example` converter derivation.
+
 tfexample-derive
 ==================
 
